@@ -1,5 +1,11 @@
 //! Lesbar provides printable string types that must encode legible text.
 //!
+//! At time of writing, `rustdoc` ignores input type parameters in the "Methods from
+//! `Deref<Target = _>`" section. For types that implement `Deref<Target = NonEmpty<_>>`, **the API
+//! documentation may be misleading** and list all methods of [`NonEmpty`] regardless of its input
+//! type parameter. This is mostly a problem for types that dereference to [`Str1`], such as
+//! [`PStr`]. See [this `rustdoc` bug](https://github.com/rust-lang/rust/issues/24686).
+//!
 //! # Integrations and Cargo Features
 //!
 //! Lesbar supports `no_std` environments and provides features for integrating as needed with
@@ -14,8 +20,10 @@
 //! | `serde`     | No      | [`serde`]          | De/serialization of printable string with [`serde`].      |
 //! | `std`       | Yes     | [`std`]            | Integrations with `std::io`.                              |
 //!
+//! [`PStr`]: crate::pstr::PStr
 //! [`PString`]: crate::pstring::PString
 //! [`serde`]: https://crates.io/crates/serde
+//! [`Str1`]: mitsein::str1::Str1
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![no_std]
