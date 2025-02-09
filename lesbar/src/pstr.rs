@@ -20,12 +20,14 @@ pub type PStr = Printable<str>;
 
 impl PStr {
     pub const fn from_str1_unchecked(text: &Str1) -> &Self {
-        // SAFETY:
+        // SAFETY: `Printable` is `repr(transparent)`: `Str1` and `PStr` have the same
+        //         representation.
         unsafe { mem::transmute::<&'_ Str1, &'_ PStr>(text) }
     }
 
     pub const fn from_mut_str1_unchecked(text: &mut Str1) -> &mut Self {
-        // SAFETY:
+        // SAFETY: `Printable` is `repr(transparent)`: `Str1` and `PStr` have the same
+        //         representation.
         unsafe { mem::transmute::<&'_ mut Str1, &'_ mut PStr>(text) }
     }
 

@@ -1,6 +1,6 @@
 **Lesbar** (ˈleːsbaːɐ̯ | _laze-bahr_) is a Rust library that provides strongly
 typed APIs for printable and non-empty strings. These strings represent some
-non-zero amount of legible text. Lesbar extends and is implemented with
+amount of legible text. Lesbar extends and is implemented with
 [Mitsein][`mitsein`].
 
 [![GitHub](https://img.shields.io/badge/GitHub-olson--sean--k/lesbar-8da0cb?logo=github&style=for-the-badge)](https://github.com/olson-sean-k/lesbar)
@@ -33,14 +33,15 @@ let text = lesbar::pstr!("Macros sind der Hammer!");
 The [`mitsein`] crate provides the non-empty string types `String1` and `Str1`,
 which represent non-empty strings. Similarly, the [`non-empty-string`] crate
 provides the `NonEmptyString` type. However, these types only guarantee that
-strings are comprised of one or more bytes of UTF-8. **Lesbar implements types
-with stricter requirements: printable strings that must encode legible text.**
+strings are comprised of one or more Unicode code points or bytes of UTF-8.
+**Lesbar implements types with more strict requirements: printable strings that
+must encode legible text.**
 
 **Lesbar implements both printable strings and printable string slices
-(`PString` and `PStr`),** which are analous to standard Rust string types. These
-types also support conversions into printable container types like `Box`. The
-[`non-empty-string`] crate does not make this distinction, and only implements
-owned string buffers.
+(`PString` and `PStr`),** which are analogous to standard Rust string types.
+These types also support conversions into printable container types like `Box`.
+The [`non-empty-string`] crate does not make this distinction, and only
+implements owned string buffers.
 
 Lesbar is implemented with the [`mitsein`] crate, which provides non-empty
 collections, slices, and iterators. **Printable string types provide strongly

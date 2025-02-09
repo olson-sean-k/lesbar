@@ -52,6 +52,8 @@ use mitsein::NonEmpty;
 pub use lesbar_macros::{pstr, str1};
 pub use lesbar_text::StrExt;
 
+// TODO: Der Bergiff „Printable“ ist hier nicht ganz eindutig. Vielleicht „Legible“ ist besser,
+//       weil sie Sichtbarkeit suggeriert. Schließlich heißt sie „Lesbar“.
 // Though this type contains a `NonEmpty<T>` rather than a `T`, this `derive` is correct, since
 // `NonEmpty` also implements these traits with bounds on `T`.
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
