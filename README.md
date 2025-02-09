@@ -1,7 +1,7 @@
 **Lesbar** (ˈleːsbaːɐ̯ | _laze-bahr_) is a Rust library that provides strongly
-typed APIs for printable and non-empty (legible) strings. These strings
-represent some non-zero amount of text that can be rendered. Lesbar extends and
-is implemented with [Mitsein][`mitsein`].
+typed APIs for printable and non-empty strings. These strings represent some
+non-zero amount of legible text. Lesbar extends and is implemented with
+[Mitsein][`mitsein`].
 
 [![GitHub](https://img.shields.io/badge/GitHub-olson--sean--k/lesbar-8da0cb?logo=github&style=for-the-badge)](https://github.com/olson-sean-k/lesbar)
 [![docs.rs](https://img.shields.io/badge/docs.rs-lesbar-66c2a5?logo=rust&style=for-the-badge)](https://docs.rs/lesbar)
@@ -9,7 +9,7 @@ is implemented with [Mitsein][`mitsein`].
 
 ## Basic Usage
 
-Allocating a `PString` from a string literal (fallibly):
+Allocating a `PString` (printable string) from a string literal:
 
 ```rust
 use lesbar::prelude::*;
@@ -18,14 +18,14 @@ let text = PString::try_from("Servus!").unwrap();
 let error = PString::try_from("\u{FEFF}").unwrap_err();
 ```
 
-Constructing a `PStr` with the `pstr!` macro (infallibly):
+Constructing a `PStr` (printable string slice) with the `pstr!` macro:
 
 ```rust
 let text = lesbar::pstr!("Macros sind der Hammer!");
 
 // This does not build.
 //
-// let text = lesbar::pstr!("");
+// let text = lesbar::pstr!("\u{200B}\u{200E}");
 ```
 
 ## Features and Comparisons
