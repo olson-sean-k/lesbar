@@ -65,3 +65,4 @@ features.
 
 [`mitsein`]: https://crates.io/crates/mitsein
 [`non-empty-string`]: https://crates.io/crates/non-empty-string
+[`serde`]: https://crates.io/crates/serde
