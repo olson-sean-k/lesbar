@@ -1,0 +1,53 @@
+[package]
+name = "lesbar"
+version = "0.1.0"
+authors = ["Sean Olson <olson.sean.k@gmail.com>"]
+description = "Printable string types that must encode legible text."
+repository = "https://github.com/olson-sean-k/lesbar"
+readme = "../README.md"
+edition = "2021"
+
+[features]
+default = ["std"]
+alloc = [
+    "mitsein/alloc",
+    "serde/alloc",
+]
+serde = [
+    "dep:serde",
+    "dep:serde_derive",
+]
+std = [
+    "alloc",
+    "mitsein/std",
+    "serde/std",
+]
+
+[dependencies]
+unicode-segmentation = "^1.12.0"
+unicode-width = "^0.2.0"
+
+[dependencies.lesbar-macros]
+version = "^0.1.0"
+path = "../lesbar-macros"
+
+[dependencies.lesbar-text]
+version = "^0.1.0"
+path = "../lesbar-text"
+
+[dependencies.mitsein]
+version = "^0.5.0"
+default-features = false
+
+[dependencies.serde]
+version = "1.0"
+default-features = false
+optional = true
+
+[dependencies.serde_derive]
+version = "1.0"
+default-features = false
+optional = true
+
+[dev-dependencies]
+rstest = "^0.21.0"

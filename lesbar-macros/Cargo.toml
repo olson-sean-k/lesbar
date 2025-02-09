@@ -1,0 +1,21 @@
+[package]
+name = "lesbar-macros"
+version = "0.1.0"
+authors = ["Sean Olson <olson.sean.k@gmail.com>"]
+description = "Procedural macros for printable string types."
+repository = "https://github.com/olson-sean-k/lesbar"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "^1.0"
+syn = "^2.0"
+
+[dependencies.lesbar-text]
+version = "^0.1.0"
+path = "../lesbar-text"
+
+[dev-dependencies]
+rstest = "^0.21.0"

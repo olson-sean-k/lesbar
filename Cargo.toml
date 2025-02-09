@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "lesbar",
+    "lesbar-macros",
+    "lesbar-text",
+]
+resolver = "2"
