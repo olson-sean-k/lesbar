@@ -17,5 +17,10 @@ syn = "^2.0"
 version = "^0.1.0"
 path = "../lesbar-text"
 
+[dependencies.mitsein]
+workspace = true
+
 [dev-dependencies]
-rstest = "^0.21.0"
+
+[dev-dependencies.rstest]
+workspace = true

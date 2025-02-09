@@ -3,6 +3,7 @@
 extern crate proc_macro;
 
 use lesbar_text::StrExt as _;
+use mitsein::str1::Str1;
 use proc_macro::TokenStream;
 use syn::LitStr;
 
@@ -29,8 +30,7 @@ pub fn pstr(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn str1(input: TokenStream) -> TokenStream {
     let literal = syn::parse_macro_input!(input as LitStr);
-    // TODO: Share the predicate code with `mitsein` instead of reimplementing it here.
-    if literal.value().chars().take(1).count() != 0 {
+    if Str1::try_from_str(literal.value().as_ref()).is_ok() {
         quote::quote! {
             // SAFETY: The procedural macro that generated this code has established that the
             //         string literal is non-empty.
