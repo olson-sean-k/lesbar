@@ -8,7 +8,7 @@ readme = "../README.md"
 edition = "2021"
 
 [features]
-default = ["std"]
+default = ["alloc"]
 alloc = [
     "mitsein/alloc",
     "serde/alloc",
@@ -16,11 +16,6 @@ alloc = [
 serde = [
     "dep:serde",
     "dep:serde_derive",
-]
-std = [
-    "alloc",
-    "mitsein/std",
-    "serde/std",
 ]
 
 [dependencies]

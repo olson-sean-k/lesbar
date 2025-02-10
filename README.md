@@ -62,7 +62,6 @@ features.
 |-------------|---------|--------------------|---------------------------------------------------------|
 | `alloc`     | No      | `alloc`            | Printable and non-empty string buffers, like `PString`. |
 | `serde`     | No      | [`serde`]          | De/serialization of printable strings with [`serde`].   |
-| `std`       | Yes     | `std`              | Integrations with `std::io`.                            |
 
 [`mitsein`]: https://crates.io/crates/mitsein
 [`non-empty-string`]: https://crates.io/crates/non-empty-string

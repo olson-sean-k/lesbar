@@ -18,7 +18,6 @@
 //! |-------------|---------|--------------------|-----------------------------------------------------------|
 //! | `alloc`     | No      | [`alloc`]          | Printable and non-empty string buffers, like [`PString`]. |
 //! | `serde`     | No      | [`serde`]          | De/serialization of printable string with [`serde`].      |
-//! | `std`       | Yes     | [`std`]            | Integrations with `std::io`.                              |
 //!
 //! [`PStr`]: crate::pstr::PStr
 //! [`PString`]: crate::pstring::PString
@@ -30,8 +29,6 @@
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
-#[cfg(feature = "std")]
-extern crate std;
 
 extern crate self as lesbar;
 
