@@ -2,7 +2,7 @@
 name = "lesbar"
 version = "0.1.0"
 authors = ["Sean Olson <olson.sean.k@gmail.com>"]
-description = "Printable string types that must encode legible text."
+description = "String types that must encode legible text."
 repository = "https://github.com/olson-sean-k/lesbar"
 readme = "../README.md"
 edition = "2021"

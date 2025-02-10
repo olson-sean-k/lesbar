@@ -2,7 +2,7 @@
 name = "lesbar-macros"
 version = "0.1.0"
 authors = ["Sean Olson <olson.sean.k@gmail.com>"]
-description = "Procedural macros for printable string types."
+description = "Procedural macros for string types that encode legible text."
 repository = "https://github.com/olson-sean-k/lesbar"
 edition = "2021"
 
