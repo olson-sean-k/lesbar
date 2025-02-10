@@ -9,15 +9,15 @@
 //! # Integrations and Cargo Features
 //!
 //! Lesbar supports `no_std` environments and provides features for integrating as needed with
-//! [`alloc`] and [`std`]. By default, the `std` feature is enabled for complete support of the
-//! standard library.
+//! [`alloc`]. By default, the `alloc` feature is enabled for complete support of the standard
+//! library.
 //!
 //! The following table summarizes supported Cargo features and integrations.
 //!
-//! | Feature     | Default | Primary Dependency | Description                                               |
-//! |-------------|---------|--------------------|-----------------------------------------------------------|
-//! | `alloc`     | No      | [`alloc`]          | Printable and non-empty string buffers, like [`TString`]. |
-//! | `serde`     | No      | [`serde`]          | De/serialization of printable string with [`serde`].      |
+//! | Feature     | Default | Primary Dependency | Description                                         |
+//! |-------------|---------|--------------------|-----------------------------------------------------|
+//! | `alloc`     | No      | [`alloc`]          | Legible string buffers, like [`TString`].           |
+//! | `serde`     | No      | [`serde`]          | De/serialization of legible strings with [`serde`]. |
 //!
 //! [`TStr`]: crate::tstr::TStr
 //! [`TString`]: crate::tstring::TString

@@ -21,7 +21,7 @@ pub fn tstr(input: TokenStream) -> TokenStream {
     }
     else {
         quote::quote! {
-            ::core::compile_error!("string literal is not printable")
+            ::core::compile_error!("string literal has no legible text")
         }
     }
     .into()

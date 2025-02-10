@@ -20,14 +20,12 @@ pub type TStr = Text<str>;
 
 impl TStr {
     pub const fn from_str1_unchecked(text: &Str1) -> &Self {
-        // SAFETY: `Printable` is `repr(transparent)`: `Str1` and `TStr` have the same
-        //         representation.
+        // SAFETY: `Text` is `repr(transparent)`: `Str1` and `TStr` have the same representation.
         unsafe { mem::transmute::<&'_ Str1, &'_ TStr>(text) }
     }
 
     pub const fn from_mut_str1_unchecked(text: &mut Str1) -> &mut Self {
-        // SAFETY: `Printable` is `repr(transparent)`: `Str1` and `TStr` have the same
-        //         representation.
+        // SAFETY: `Text` is `repr(transparent)`: `Str1` and `TStr` have the same representation.
         unsafe { mem::transmute::<&'_ mut Str1, &'_ mut TStr>(text) }
     }
 
@@ -64,21 +62,20 @@ impl TStr {
     }
 
     pub fn graphemes1(&self) -> Iterator1<Peekable<Graphemes<'_>>> {
-        Iterator1::try_from_iter(self.graphemes(true))
-            .expect("printable string has no grapheme clusters")
+        Iterator1::try_from_iter(self.graphemes(true)).expect("text has no grapheme clusters")
     }
 
     pub fn graphemes_indices1(&self) -> Iterator1<Peekable<GraphemeIndices<'_>>> {
         Iterator1::try_from_iter(self.grapheme_indices(true))
-            .expect("printable string has no grapheme clusters")
+            .expect("text has no grapheme clusters")
     }
 
     pub fn width(&self) -> NonZeroUsize {
-        NonZeroUsize::new(self.as_str().width()).expect("printable string width is zero")
+        NonZeroUsize::new(self.as_str().width()).expect("text width is zero")
     }
 
     pub fn width_cjk(&self) -> NonZeroUsize {
-        NonZeroUsize::new(self.as_str().width_cjk()).expect("printable string width is zero")
+        NonZeroUsize::new(self.as_str().width_cjk()).expect("text width is zero")
     }
 
     pub fn as_str1(&self) -> &Str1 {

@@ -58,10 +58,10 @@ can be used in contexts where OS features or allocation are not available.**
 Lesbar provides some optional features and integrations via the following Cargo
 features.
 
-| Feature     | Default | Primary Dependency | Description                                             |
-|-------------|---------|--------------------|---------------------------------------------------------|
-| `alloc`     | No      | `alloc`            | Printable and non-empty string buffers, like `TString`. |
-| `serde`     | No      | [`serde`]          | De/serialization of printable strings with [`serde`].   |
+| Feature     | Default | Primary Dependency | Description                                         |
+|-------------|---------|--------------------|-----------------------------------------------------|
+| `alloc`     | No      | `alloc`            | Legible string buffers, like `TString`.             |
+| `serde`     | No      | [`serde`]          | De/serialization of legible strings with [`serde`]. |
 
 [`mitsein`]: https://crates.io/crates/mitsein
 [`non-empty-string`]: https://crates.io/crates/non-empty-string

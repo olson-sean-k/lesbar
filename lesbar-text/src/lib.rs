@@ -30,6 +30,10 @@ impl StrExt for str {
 struct Grapheme<'t>(&'t str);
 
 impl Grapheme<'_> {
+    fn width(&self) -> usize {
+        self.0.width()
+    }
+
     fn as_singular_code_point(&self) -> Option<char> {
         match self
             .0
@@ -48,7 +52,7 @@ impl Grapheme<'_> {
     // typically rendered as a replacement glyph when not assigned or recognized. When used as
     // intended, private-use characters represent a glyph with some non-zero rendered width.
     pub fn is_text(&self) -> bool {
-        self.is_private_use_character() || self.0.width() != 0
+        self.is_private_use_character() || self.width() != 0
     }
 
     fn is_private_use_character(&self) -> bool {
@@ -75,13 +79,13 @@ mod tests {
     }
 
     #[rstest]
-    #[case::one_plane_basic_multilingual("\u{E064}")]
-    #[case::one_plane_15("\u{F00FF}")]
-    #[case::one_plane_16("\u{100000}")]
-    #[case::one_with_non_printable("\u{200B}\u{E064}")]
+    #[case::one_from_plane_basic_multilingual("\u{E064}")]
+    #[case::one_from_plane_15("\u{F00FF}")]
+    #[case::one_from_plane_16("\u{100000}")]
+    #[case::one_with_non_text("\u{200B}\u{E064}")]
     #[case::many_from_each_plane("\u{E000}\u{F0000}\u{10FFFD}")]
-    #[case::many_with_non_printable("\u{E000}\u{200B}\u{E001}")]
-    fn str_with_private_use_chars_has_text(#[case] text: &str) {
+    #[case::many_with_non_text("\u{E000}\u{200B}\u{E001}")]
+    fn str_with_private_use_characters_has_text(#[case] text: &str) {
         assert!(text.has_text())
     }
 }
