@@ -5,8 +5,15 @@ authors = ["Sean Olson <olson.sean.k@gmail.com>"]
 repository = "https://github.com/olson-sean-k/lesbar"
 edition = "2021"
 
+[features]
+default = []
+alloc = ["mitsein/alloc"]
+
 [dependencies]
 unicode-properties = "^0.1.3"
+
+[dependencies.mitsein]
+workspace = true
 
 [dependencies.unicode-segmentation]
 workspace = true

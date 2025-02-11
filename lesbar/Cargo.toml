@@ -10,6 +10,7 @@ edition = "2021"
 [features]
 default = ["alloc"]
 alloc = [
+    "lesbar-text/alloc",
     "mitsein/alloc",
     "serde/alloc",
 ]

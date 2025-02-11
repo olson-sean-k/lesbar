@@ -47,7 +47,7 @@ pub mod prelude {
 use mitsein::NonEmpty;
 
 pub use lesbar_macros::{str1, tstr};
-pub use lesbar_text::StrExt;
+pub use lesbar_text::{iter, Grapheme, StrExt};
 
 // Though this type contains a `NonEmpty<T>` rather than a `T`, this `derive` is correct, since
 // `NonEmpty` also implements these traits with bounds on `T`.

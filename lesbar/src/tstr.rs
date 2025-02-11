@@ -5,16 +5,91 @@ use alloc::borrow::ToOwned;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::iter::Peekable;
 use core::mem;
-use core::num::NonZeroUsize;
 use core::ops::{Deref, DerefMut};
 use mitsein::iter1::Iterator1;
 use mitsein::str1::Str1;
-use unicode_segmentation::{GraphemeIndices, Graphemes, UnicodeSegmentation};
-use unicode_width::UnicodeWidthStr;
 
+use crate::iter::{GraphemeIndices, Graphemes};
 #[cfg(feature = "alloc")]
 use crate::tstring::TString;
-use crate::{StrExt as _, Text};
+use crate::{Grapheme, StrExt as _, Text};
+
+#[derive(Clone, Debug)]
+#[repr(transparent)]
+pub struct TGrapheme<'t> {
+    text: Grapheme<'t>,
+}
+
+impl<'t> TGrapheme<'t> {
+    pub const fn from_grapheme_unchecked(grapheme: Grapheme<'t>) -> Self {
+        TGrapheme { text: grapheme }
+    }
+
+    pub const fn as_grapheme(&self) -> &Grapheme<'t> {
+        &self.text
+    }
+}
+
+impl<'t> AsRef<Grapheme<'t>> for TGrapheme<'t> {
+    fn as_ref(&self) -> &Grapheme<'t> {
+        self.as_grapheme()
+    }
+}
+
+impl<'t> Deref for TGrapheme<'t> {
+    type Target = Grapheme<'t>;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_grapheme()
+    }
+}
+
+impl<'t> From<TGrapheme<'t>> for Grapheme<'t> {
+    fn from(grapheme: TGrapheme<'t>) -> Self {
+        grapheme.text
+    }
+}
+
+impl<'t, T> PartialEq<&'_ T> for TGrapheme<'t>
+where
+    TGrapheme<'t>: PartialEq<T>,
+    T: ?Sized,
+{
+    fn eq(&self, other: &&'_ T) -> bool {
+        self.eq(*other)
+    }
+}
+
+impl PartialEq<Grapheme<'_>> for TGrapheme<'_> {
+    fn eq(&self, other: &Grapheme<'_>) -> bool {
+        self.as_grapheme().eq(other)
+    }
+}
+
+impl PartialEq<str> for TGrapheme<'_> {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str().eq(other)
+    }
+}
+
+impl PartialEq<Str1> for TGrapheme<'_> {
+    fn eq(&self, other: &Str1) -> bool {
+        self.as_str1().eq(other)
+    }
+}
+
+impl<'t> TryFrom<Grapheme<'t>> for TGrapheme<'t> {
+    type Error = Grapheme<'t>;
+
+    fn try_from(grapheme: Grapheme<'t>) -> Result<Self, Self::Error> {
+        if grapheme.is_text() {
+            Ok(TGrapheme { text: grapheme })
+        }
+        else {
+            Err(grapheme)
+        }
+    }
+}
 
 pub type TStr = Text<str>;
 
@@ -62,35 +137,26 @@ impl TStr {
     }
 
     pub fn graphemes1(&self) -> Iterator1<Peekable<Graphemes<'_>>> {
-        Iterator1::try_from_iter(self.graphemes(true)).expect("text has no grapheme clusters")
+        Iterator1::try_from_iter(self.graphemes()).expect("text has no grapheme clusters")
     }
 
-    pub fn graphemes_indices1(&self) -> Iterator1<Peekable<GraphemeIndices<'_>>> {
-        Iterator1::try_from_iter(self.grapheme_indices(true))
-            .expect("text has no grapheme clusters")
+    pub fn grapheme_indices1(&self) -> Iterator1<Peekable<GraphemeIndices<'_>>> {
+        Iterator1::try_from_iter(self.grapheme_indices()).expect("text has no grapheme clusters")
     }
 
-    pub fn width(&self) -> NonZeroUsize {
-        NonZeroUsize::new(self.as_str().width()).expect("text width is zero")
-    }
-
-    pub fn width_cjk(&self) -> NonZeroUsize {
-        NonZeroUsize::new(self.as_str().width_cjk()).expect("text width is zero")
-    }
-
-    pub fn as_str1(&self) -> &Str1 {
+    pub const fn as_str1(&self) -> &Str1 {
         &self.text
     }
 
-    pub fn as_mut_str1(&mut self) -> &mut Str1 {
+    pub const fn as_mut_str1(&mut self) -> &mut Str1 {
         &mut self.text
     }
 
-    pub fn as_str(&self) -> &str {
+    pub const fn as_str(&self) -> &str {
         self.as_str1().as_str()
     }
 
-    pub fn as_mut_str(&mut self) -> &mut str {
+    pub const fn as_mut_str(&mut self) -> &mut str {
         self.as_mut_str1().as_mut_str()
     }
 }
@@ -166,6 +232,28 @@ impl<'a> From<&'a TStr> for &'a Str1 {
 impl<'a> From<&'a mut TStr> for &'a mut Str1 {
     fn from(text: &'a mut TStr) -> Self {
         text.as_mut_str1()
+    }
+}
+
+impl<T> PartialEq<&'_ T> for TStr
+where
+    TStr: PartialEq<T>,
+    T: ?Sized,
+{
+    fn eq(&self, other: &&'_ T) -> bool {
+        self.eq(*other)
+    }
+}
+
+impl PartialEq<str> for TStr {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str().eq(other)
+    }
+}
+
+impl PartialEq<Str1> for TStr {
+    fn eq(&self, other: &Str1) -> bool {
+        self.as_str1().eq(other)
     }
 }
 

@@ -27,6 +27,17 @@ let text = lesbar::tstr!("Macros sind der Hammer!");
 // let text = lesbar::tstr!("\u{200B}\u{200E}");
 ```
 
+Removing text from a `TString`:
+
+```rust
+use lesbar::prelude::*;
+
+let mut text = TString::from(lesbar::tstr!("Raus damit."));
+let grapheme = text.pop_grapheme_or().none().unwrap();
+
+assert_eq!(grapheme, ".");
+```
+
 ## Features and Comparisons
 
 The [`mitsein`] crate provides the non-empty string types `String1` and `Str1`,
