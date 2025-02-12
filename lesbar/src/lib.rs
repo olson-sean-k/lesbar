@@ -37,6 +37,8 @@ extern crate alloc;
 
 extern crate self as lesbar;
 
+mod serde;
+
 pub mod tstr;
 pub mod tstring;
 
@@ -49,11 +51,34 @@ pub mod prelude {
     pub use crate::StrExt as _;
 }
 
+#[cfg(feature = "serde")]
+use ::serde::{Deserialize, Serialize};
 use mitsein::NonEmpty;
+
+#[cfg(feature = "serde")]
+use crate::serde::{NonTextError, Serde};
 
 pub use lesbar_macros::{str1, tstr};
 pub use lesbar_text::{iter, Grapheme, StrExt};
 
+#[cfg_attr(
+    feature = "serde",
+    derive(::serde_derive::Deserialize, ::serde_derive::Serialize)
+)]
+#[cfg_attr(
+    feature = "serde",
+    serde(
+        bound(
+            deserialize = "Self: TryFrom<Serde<NonEmpty<T>>, Error = NonTextError>, \
+                           NonEmpty<T>: Deserialize<'de>, \
+                           T: Clone,",
+            serialize = "NonEmpty<T>: Serialize, \
+                         T: Clone,",
+        ),
+        try_from = "Serde<NonEmpty<T>>",
+        into = "Serde<NonEmpty<T>>",
+    )
+)]
 // Though this type contains a `NonEmpty<T>` rather than a `T`, this `derive` is correct, since
 // `NonEmpty` also implements these traits with bounds on `T`.
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]

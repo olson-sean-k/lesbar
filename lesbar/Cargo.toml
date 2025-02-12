@@ -12,11 +12,12 @@ default = ["alloc"]
 alloc = [
     "lesbar-text/alloc",
     "mitsein/alloc",
-    "serde/alloc",
+    "serde?/alloc",
 ]
 serde = [
     "dep:serde",
     "dep:serde_derive",
+    "mitsein/serde",
 ]
 
 [dependencies]
