@@ -133,7 +133,7 @@ impl TStr {
 
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    pub fn into_tstring(&self) -> TString {
+    pub fn to_tstring(&self) -> TString {
         TString::from(self)
     }
 
