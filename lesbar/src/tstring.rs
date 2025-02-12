@@ -3,6 +3,7 @@
 //! [`string`]: alloc::string
 
 #![cfg(feature = "alloc")]
+#![cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 
 use alloc::borrow::{Borrow, BorrowMut, Cow};
 use alloc::boxed::Box;
