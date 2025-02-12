@@ -24,6 +24,11 @@
 //! [`serde`]: https://crates.io/crates/serde
 //! [`Str1`]: mitsein::str1::Str1
 
+// SAFETY: This crate is somewhat more conservative than the `mitsein` crate regarding unsafe code.
+//         While it uses unsafe code, this is only done when strictly necessary (mostly for
+//         conversions) and invariants are asserted. This is why unchecked functions are **not**
+//         unsafe: the invariants of these functions are not assumed in other functions.
+
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![no_std]
 

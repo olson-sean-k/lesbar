@@ -11,7 +11,7 @@ use mitsein::str1::Str1;
 
 use crate::iter::{GraphemeIndices, Graphemes};
 #[cfg(feature = "alloc")]
-use crate::tstring::TString;
+use crate::tstring::{BoxedTStr, TString};
 use crate::{Grapheme, StrExt as _, Text};
 
 #[derive(Clone, Debug)]
@@ -129,6 +129,12 @@ impl TStr {
         else {
             Err(text)
         }
+    }
+
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    pub fn into_tstring(self: BoxedTStr) -> TString {
+        TString::from(self)
     }
 
     #[cfg(feature = "alloc")]

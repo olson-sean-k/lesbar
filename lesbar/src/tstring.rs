@@ -11,6 +11,7 @@ use alloc::string::String;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::ops::{Deref, DerefMut, RangeTo};
 use core::slice::SliceIndex;
+use mitsein::boxed1::BoxedStr1;
 use mitsein::str1::Str1;
 use mitsein::string1::{CowStr1, String1};
 use mitsein::Segmentation;
@@ -20,9 +21,32 @@ use crate::{Grapheme, StrExt as _, Text};
 
 pub type BoxedTStr = Box<TStr>;
 
-pub trait BoxedTStrExt {}
+pub trait BoxedTStrExt {
+    fn from_boxed_str1_unchecked(text: BoxedStr1) -> Self;
 
-impl BoxedTStrExt for BoxedTStr {}
+    fn into_boxed_str1(self) -> BoxedStr1;
+}
+
+impl BoxedTStrExt for BoxedTStr {
+    fn from_boxed_str1_unchecked(text: BoxedStr1) -> Self {
+        let text = Box::into_raw(text);
+        // SAFETY: Client code is responsible for asserting that the input string has legible text.
+        //         This transmutation is safe, because `Str1` and `TStr` have the same
+        //         representation (`TStr` is `repr(transparent)`). Moreover, the allocator only
+        //         requires that the memory location and layout are the same when deallocating, so
+        //         dropping the transmuted `Box` is sound.
+        unsafe { Box::from_raw(text as *mut TStr) }
+    }
+
+    fn into_boxed_str1(self) -> BoxedStr1 {
+        let text = Box::into_raw(self);
+        // SAFETY: This transmutation is safe, because `Str1` and `TStr` have the same
+        //         representation (`TStr` is `repr(transparent)`). Moreover, the allocator only
+        //         requires that the memory location and layout are the same when deallocating, so
+        //         dropping the transmuted `Box` is sound.
+        unsafe { Box::from_raw(text as *mut Str1) }
+    }
+}
 
 pub type CowTStr<'a> = Cow<'a, TStr>;
 
@@ -195,6 +219,12 @@ impl DerefMut for TString {
 impl Display for TString {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         write!(formatter, "{}", self.as_str())
+    }
+}
+
+impl From<BoxedTStr> for TString {
+    fn from(text: BoxedTStr) -> Self {
+        TString::from_string1_unchecked(String1::from(text.into_boxed_str1()))
     }
 }
 
