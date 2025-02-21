@@ -6,6 +6,26 @@ members = [
 ]
 resolver = "2"
 
+[workspace.package]
+authors = ["Sean Olson <olson.sean.k@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/olson-sean-k/lesbar"
+edition = "2021"
+rust-version = "1.83.0"
+keywords = [
+    "legible",
+    "non-empty",
+    "string",
+    "text",
+    "visible",
+]
+categories = [
+    "data-structures",
+    "no-std",
+    "no-std::no-alloc",
+    "rust-patterns",
+]
+
 [workspace.dependencies]
 rstest = "^0.21.0"
 unicode-segmentation = "^1.12.0"

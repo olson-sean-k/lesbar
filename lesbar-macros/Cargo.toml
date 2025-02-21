@@ -1,16 +1,21 @@
 [package]
 name = "lesbar-macros"
 version = "0.1.0"
-authors = ["Sean Olson <olson.sean.k@gmail.com>"]
 description = "Procedural macros for string types that encode legible text."
-repository = "https://github.com/olson-sean-k/lesbar"
-edition = "2021"
-rust-version = "1.83.0"
+
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+keywords.workspace = true
+categories.workspace = true
 
 [lib]
 proc-macro = true
 
 [dependencies]
+mitsein.workspace = true
 quote = "^1.0"
 syn = "^2.0"
 
@@ -18,10 +23,5 @@ syn = "^2.0"
 version = "^0.1.0"
 path = "../lesbar-text"
 
-[dependencies.mitsein]
-workspace = true
-
 [dev-dependencies]
-
-[dev-dependencies.rstest]
-workspace = true
+rstest.workspace = true
