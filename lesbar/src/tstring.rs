@@ -11,9 +11,10 @@ use alloc::string::String;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::ops::{Deref, DerefMut, RangeTo};
 use core::slice::SliceIndex;
+use mitsein::borrow1::CowStr1;
 use mitsein::boxed1::BoxedStr1;
 use mitsein::str1::Str1;
-use mitsein::string1::{CowStr1, String1};
+use mitsein::string1::String1;
 use mitsein::Segmentation;
 
 use crate::tstr::TStr;

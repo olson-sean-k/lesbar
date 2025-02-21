@@ -65,8 +65,9 @@ mod grapheme {
 mod grapheme {
     use alloc::borrow::Cow;
     use alloc::string::String;
+    use mitsein::borrow1::CowStr1;
     use mitsein::str1::Str1;
-    use mitsein::string1::{CowStr1, String1};
+    use mitsein::string1::String1;
 
     #[derive(Clone, Debug, Eq, Hash, PartialEq)]
     pub struct Grapheme<'t>(CowStr1<'t>);
