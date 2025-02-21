@@ -168,9 +168,7 @@ impl Grapheme<'_> {
     pub fn is_private_use_character(&self) -> bool {
         self.to_code_point()
             .map(UnicodeGeneralCategory::general_category)
-            .map_or(false, |category| {
-                matches!(category, GeneralCategory::PrivateUse)
-            })
+            .is_some_and(|category| matches!(category, GeneralCategory::PrivateUse))
     }
 }
 
