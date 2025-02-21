@@ -16,7 +16,7 @@
 //!
 //! | Feature     | Default | Primary Dependency | Description                                         |
 //! |-------------|---------|--------------------|-----------------------------------------------------|
-//! | `alloc`     | No      | [`alloc`]          | Legible string buffers, like [`TString`].           |
+//! | `alloc`     | Yes     | [`alloc`]          | Legible string buffers, like [`TString`].           |
 //! | `serde`     | No      | [`serde`]          | De/serialization of legible strings with [`serde`]. |
 //!
 //! [`TStr`]: crate::tstr::TStr
