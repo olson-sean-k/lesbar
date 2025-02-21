@@ -114,6 +114,7 @@ mod grapheme {
             Grapheme(CowStr1::Owned(self.0.into_owned()))
         }
 
+        #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
         pub fn to_string1(&self) -> String1 {
             self.0.to_string1()
         }
