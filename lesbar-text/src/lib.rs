@@ -38,6 +38,12 @@ impl StrExt for str {
     }
 }
 
+// TODO: `Grapheme` is meant as more of an "ephemeral" type, so it does not have explicit slice vs.
+//       buffer types. This keeps its API minimal, but also inflexible. Note that enabling the
+//       `alloc` feature changes `Grapheme`'s representation to support buffering but at a cost. A
+//       `Grapheme` slice type, `GraphemeBuf` buffer type, and `CowGrapheme` (`Cow<'_, Grapheme>`)
+//       copy-on-write type are probably a better solution for this.
+
 #[cfg(not(feature = "alloc"))]
 mod grapheme {
     use mitsein::str1::Str1;
@@ -51,6 +57,10 @@ mod grapheme {
         /// The given string slice `text` must be non-empty.
         pub const unsafe fn from_str_unchecked(text: &'t str) -> Self {
             Grapheme(Str1::from_str_unchecked(text))
+        }
+
+        pub const fn from_str1_unchecked(text: &'t Str1) -> Self {
+            Grapheme(text)
         }
     }
 
@@ -81,11 +91,20 @@ mod grapheme {
             Grapheme(CowStr1::Owned(String1::from_string_unchecked(text)))
         }
 
+        #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+        pub fn from_string1_unchecked(text: String1) -> Self {
+            Grapheme(CowStr1::Owned(text))
+        }
+
         /// # Safety
         ///
         /// The given string slice `text` must be non-empty.
         pub const unsafe fn from_str_unchecked(text: &'t str) -> Self {
             Grapheme(CowStr1::Borrowed(Str1::from_str_unchecked(text)))
+        }
+
+        pub const fn from_str1_unchecked(text: &'t Str1) -> Self {
+            Grapheme(CowStr1::Borrowed(text))
         }
     }
 
@@ -134,18 +153,32 @@ mod grapheme {
             grapheme.to_string1()
         }
     }
-}
 
-pub use grapheme::Grapheme;
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    impl TryFrom<String> for Grapheme<'_> {
+        type Error = String;
 
-impl<'t> Grapheme<'t> {
-    pub fn try_from_str(text: &'t str) -> Result<Self, &'t str> {
-        match text.graphemes().enumerate().last() {
-            Some((0, grapheme)) => Ok(grapheme),
-            _ => Err(text),
+        fn try_from(text: String) -> Result<Self, Self::Error> {
+            String1::try_from(text).and_then(|text| Grapheme::try_from(text).map_err(String::from))
+        }
+    }
+
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    impl TryFrom<String1> for Grapheme<'_> {
+        type Error = String1;
+
+        fn try_from(text: String1) -> Result<Self, Self::Error> {
+            if crate::is_grapheme(&text) {
+                Ok(Grapheme::from_string1_unchecked(text))
+            }
+            else {
+                Err(text)
+            }
         }
     }
 }
+
+pub use grapheme::Grapheme;
 
 impl Grapheme<'_> {
     pub fn to_char(&self) -> Option<char> {
@@ -218,6 +251,32 @@ impl PartialEq<Str1> for Grapheme<'_> {
     fn eq(&self, other: &Str1) -> bool {
         self.as_str1().eq(other)
     }
+}
+
+impl<'t> TryFrom<&'t str> for Grapheme<'t> {
+    type Error = &'t str;
+
+    fn try_from(text: &'t str) -> Result<Self, Self::Error> {
+        Str1::try_from_str(text)
+            .and_then(|text| Grapheme::try_from(text).map_err(|text| text.as_str()))
+    }
+}
+
+impl<'t> TryFrom<&'t Str1> for Grapheme<'t> {
+    type Error = &'t Str1;
+
+    fn try_from(text: &'t Str1) -> Result<Self, Self::Error> {
+        if crate::is_grapheme(text) {
+            Ok(Grapheme::from_str1_unchecked(text))
+        }
+        else {
+            Err(text)
+        }
+    }
+}
+
+fn is_grapheme(text: &str) -> bool {
+    matches!(text.graphemes().enumerate().last(), Some((0, _)))
 }
 
 #[cfg(test)]
