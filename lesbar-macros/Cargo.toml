@@ -5,6 +5,7 @@ authors = ["Sean Olson <olson.sean.k@gmail.com>"]
 description = "Procedural macros for string types that encode legible text."
 repository = "https://github.com/olson-sean-k/lesbar"
 edition = "2021"
+rust-version = "1.83.0"
 
 [lib]
 proc-macro = true

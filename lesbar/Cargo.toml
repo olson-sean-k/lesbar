@@ -6,6 +6,7 @@ description = "String types that must encode legible text."
 repository = "https://github.com/olson-sean-k/lesbar"
 readme = "../README.md"
 edition = "2021"
+rust-version = "1.83.0"
 
 [features]
 default = ["alloc"]
