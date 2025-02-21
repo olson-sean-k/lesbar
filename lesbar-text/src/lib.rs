@@ -76,6 +76,7 @@ mod grapheme {
         /// # Safety
         ///
         /// The given string buffer `text` must be non-empty.
+        #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
         pub unsafe fn from_string_unchecked(text: String) -> Self {
             Grapheme(CowStr1::Owned(String1::from_string_unchecked(text)))
         }
@@ -89,6 +90,7 @@ mod grapheme {
     }
 
     impl Grapheme<'_> {
+        #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
         pub fn into_owned(self) -> Grapheme<'static> {
             Grapheme(CowStr1::Owned(self.0.into_owned()))
         }
@@ -102,6 +104,7 @@ mod grapheme {
         }
     }
 
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     impl<'t> From<Grapheme<'t>> for Cow<'t, str> {
         fn from(grapheme: Grapheme<'t>) -> Self {
             match grapheme.0 {
@@ -111,18 +114,21 @@ mod grapheme {
         }
     }
 
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     impl<'t> From<Grapheme<'t>> for CowStr1<'t> {
         fn from(grapheme: Grapheme<'t>) -> Self {
             grapheme.0
         }
     }
 
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     impl<'t> From<Grapheme<'t>> for String {
         fn from(grapheme: Grapheme<'t>) -> Self {
             grapheme.to_string1().into_string()
         }
     }
 
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     impl<'t> From<Grapheme<'t>> for String1 {
         fn from(grapheme: Grapheme<'t>) -> Self {
             grapheme.to_string1()

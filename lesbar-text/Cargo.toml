@@ -6,6 +6,13 @@ repository = "https://github.com/olson-sean-k/lesbar"
 edition = "2021"
 rust-version = "1.83.0"
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+]
+
 [features]
 default = []
 alloc = ["mitsein/alloc"]
