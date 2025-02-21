@@ -38,6 +38,24 @@ let grapheme = text.pop_grapheme_or().none().unwrap();
 assert_eq!(grapheme, ".");
 ```
 
+## Legibility
+
+Legible string types encode some non-zero amount of Unicode with a **specified**
+non-zero column width or code points and grapheme clusters that **specify** a
+visual presentation (explicitly or otherwise). Note that blank non-empty space
+is considered legible. This is based only on the Unicode specification and its
+interpretations. Fonts, glyphs, and other rendering elements are not considered
+at all, for example.
+
+Some elements of Unicode are ambiguous regarding this notion of legibility, and
+Lesbar attempts reasonable compromise that errs on the side of considering
+Unicode illegible in such cases.
+
+Text rendering software has far more context when presenting text and can
+interpret Unicode arbitrarily. There is no guarantee that the contents of a
+legible string type in Lesbar will necessarily present as non-empty when
+rendered. However, this is very likely.
+
 ## Features and Comparisons
 
 The [`mitsein`] crate provides the non-empty string types `String1` and `Str1`,
