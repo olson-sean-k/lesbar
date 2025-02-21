@@ -148,7 +148,7 @@ impl<'t> Grapheme<'t> {
 }
 
 impl Grapheme<'_> {
-    pub fn to_code_point(&self) -> Option<char> {
+    pub fn to_char(&self) -> Option<char> {
         match self.as_str1().chars1().enumerate().last() {
             (0, point) => Some(point),
             _ => None,
@@ -172,7 +172,7 @@ impl Grapheme<'_> {
     }
 
     pub fn is_private_use_character(&self) -> bool {
-        self.to_code_point()
+        self.to_char()
             .map(UnicodeGeneralCategory::general_category)
             .is_some_and(|category| matches!(category, GeneralCategory::PrivateUse))
     }
