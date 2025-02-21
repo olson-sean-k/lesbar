@@ -257,8 +257,7 @@ impl<'t> TryFrom<&'t str> for Grapheme<'t> {
     type Error = &'t str;
 
     fn try_from(text: &'t str) -> Result<Self, Self::Error> {
-        Str1::try_from_str(text)
-            .and_then(|text| Grapheme::try_from(text).map_err(|text| text.as_str()))
+        Str1::try_from_str(text).and_then(|text| Grapheme::try_from(text).map_err(From::from))
     }
 }
 
