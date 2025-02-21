@@ -7,11 +7,14 @@ on:
         type: string
 
 jobs:
+  ci:
+    uses: ./.github/workflows/continuous-integration.yml
   powerset:
+    needs: [ci]
     uses: ./.github/workflows/feature-powerset.yml
   tag:
     name: Tag
-    needs: [powerset]
+    needs: [ci, powerset]
     runs-on: ubuntu-latest
     permissions:
       contents: write
