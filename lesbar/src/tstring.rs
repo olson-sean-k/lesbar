@@ -125,10 +125,23 @@ impl TString {
         self.text
     }
 
+    pub fn pop_char_or(&mut self) -> PopOr<'_, char> {
+        let (index, _) = self.char_indices1().rev().first();
+        // `TakeOr` only calls this function if the range has text. Since `index` demarks the last
+        // code point and the exclusive end of the range, there must be a terminating code point
+        // that is unnecessary for `self` to remain textual.
+        TakeOr::with(self, ..index, |text, _| {
+            text.as_mut_string1()
+                .pop_or()
+                .none()
+                .expect("expected code point following textual sub-string")
+        })
+    }
+
     pub fn pop_grapheme_or(&mut self) -> PopOr<'_, Grapheme<'_>> {
         let (index, _) = self.grapheme_indices1().rev().first();
         // SAFETY: `index` demarks a grapheme and `TakeOr` only calls this function if the
-        //         remainder is a valid string slice and has text, so splitting off the grapheme
+        //         range is a valid string slice and has text, so splitting off the grapheme
         //         produces non-empty and valid UTF-8 on both sides and `self` remains textual.
         TakeOr::with(self, ..index, |text, remainder| unsafe {
             Grapheme::from_string_unchecked(String::from_utf8_unchecked(
@@ -328,13 +341,40 @@ mod tests {
     use crate::tstring::TString;
 
     #[rstest]
+    #[case::only_one_char("A", "A")]
+    #[case::only_one_char("あ", "あ")]
+    #[case::alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "A")]
+    #[case::japanese("練習しなくてはいけないと思う", "練")]
+    #[case::whitespace("   ", " ")]
+    #[case::whitespace("\tend", "\t")]
+    #[case::non_text_prefix("\u{200B}ZWSP", "\u{200B}Z")]
+    #[case::non_text_prefix("\u{200B}\u{E064}ZWSP+PUC", "\u{200B}\u{E064}")]
+    #[case::combining("ä", "ä")]
+    #[case::combining("\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}", "\u{1F3F3}")]
+    fn pop_char_or_from_tstring_until_exhausted_then_tstring_eq(
+        #[case] text: &str,
+        #[case] expected: &str,
+    ) {
+        let mut text = TString::try_from(text).unwrap();
+        let expected = TStr::try_from_str(expected).unwrap();
+        while text.pop_char_or().none().is_some() {}
+        assert_eq!(text, expected);
+    }
+
+    #[rstest]
     #[case::only_one_grapheme("A", "A")]
     #[case::only_one_grapheme("あ", "あ")]
     #[case::alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "A")]
+    #[case::japanese("練習しなくてはいけないと思う", "練")]
     #[case::whitespace("   ", " ")]
     #[case::whitespace("\tend", "\t")]
-    #[case::cjk("練習しなくてはいけないと思う", "練")]
-    #[case::non_text_cluster_prefix("\u{200B}\u{E064}ZWSP+PUC", "\u{200B}\u{E064}")]
+    #[case::non_text_prefix("\u{200B}ZWSP", "\u{200B}Z")]
+    #[case::non_text_prefix("\u{200B}\u{E064}ZWSP+PUC", "\u{200B}\u{E064}")]
+    #[case::combining("ä", "ä")]
+    #[case::combining(
+        "\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}",
+        "\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}"
+    )]
     fn pop_grapheme_or_from_tstring_until_exhausted_then_tstring_eq(
         #[case] text: &str,
         #[case] expected: &str,
