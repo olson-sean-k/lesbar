@@ -42,7 +42,7 @@ impl StrExt for str {
 mod grapheme {
     use mitsein::str1::Str1;
 
-    #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+    #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     pub struct Grapheme<'t>(&'t Str1);
 
     impl<'t> Grapheme<'t> {
@@ -69,7 +69,7 @@ mod grapheme {
     use mitsein::str1::Str1;
     use mitsein::string1::String1;
 
-    #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+    #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
     pub struct Grapheme<'t>(CowStr1<'t>);
 
     impl<'t> Grapheme<'t> {
