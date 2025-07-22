@@ -99,8 +99,19 @@ where
         }
     }
 
+    pub fn or_else<E, F>(self, f: F) -> Result<T, E>
+    where
+        F: FnOnce() -> E,
+    {
+        self.take_or_else(|_, _| f())
+    }
+
     pub fn or_none(self) -> Option<T> {
         self.take_or_else(|_, _| ()).ok()
+    }
+
+    pub fn or_false(self) -> bool {
+        self.or_none().is_some()
     }
 }
 
@@ -357,7 +368,7 @@ mod tests {
     ) {
         let mut text = TString::try_from(text).unwrap();
         let expected = TStr::try_from_str(expected).unwrap();
-        while text.pop_char().or_none().is_some() {}
+        while text.pop_char().or_false() {}
         assert_eq!(text, expected);
     }
 
@@ -381,7 +392,7 @@ mod tests {
     ) {
         let mut text = TString::try_from(text).unwrap();
         let expected = TStr::try_from_str(expected).unwrap();
-        while text.pop_grapheme().or_none().is_some() {}
+        while text.pop_grapheme().or_false() {}
         assert_eq!(text, expected);
     }
 }
