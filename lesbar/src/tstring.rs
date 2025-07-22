@@ -55,18 +55,18 @@ pub trait CowTStrExt<'a> {}
 
 impl<'a> CowTStrExt<'a> for CowTStr<'a> {}
 
-pub type PopOr<'t, T> = TakeOr<'t, T, RangeTo<usize>>;
+pub type Pop<'t, T> = Take<'t, T, RangeTo<usize>>;
 
 #[derive(Debug)]
-pub struct TakeOr<'t, T, N = ()> {
+pub struct Take<'t, T, N = ()> {
     text: &'t mut TString,
     remainder: N,
     many: fn(&'t mut TString, N) -> T,
 }
 
-impl<'t, T, N> TakeOr<'t, T, N> {
+impl<'t, T, N> Take<'t, T, N> {
     const fn with(text: &'t mut TString, remainder: N, many: fn(&mut TString, N) -> T) -> Self {
-        TakeOr {
+        Take {
             text,
             remainder,
             many,
@@ -74,7 +74,7 @@ impl<'t, T, N> TakeOr<'t, T, N> {
     }
 }
 
-impl<'t, T, N> TakeOr<'t, T, N>
+impl<'t, T, N> Take<'t, T, N>
 where
     N: Clone + SliceIndex<str, Output = str>,
 {
@@ -82,7 +82,7 @@ where
     where
         F: FnOnce(&'t mut TString, N) -> E,
     {
-        let TakeOr {
+        let Take {
             text,
             remainder,
             many,
@@ -99,13 +99,13 @@ where
         }
     }
 
-    pub fn none(self) -> Option<T> {
+    pub fn or_none(self) -> Option<T> {
         self.take_or_else(|_, _| ()).ok()
     }
 }
 
-impl<'t, T> TakeOr<'t, T, RangeTo<usize>> {
-    pub fn get(self) -> Result<T, &'t str> {
+impl<'t, T> Take<'t, T, RangeTo<usize>> {
+    pub fn or_get(self) -> Result<T, &'t str> {
         self.take_or_else(|text, remainder| {
             // `take_or_else` attempts to slice the string, so `[]` is used here instead of `get`
             // and `expect`.
@@ -125,12 +125,12 @@ impl TString {
         self.text
     }
 
-    pub fn pop_char_or(&mut self) -> PopOr<'_, char> {
+    pub fn pop_char(&mut self) -> Pop<'_, char> {
         let (index, _) = self.char_indices1().rev().first();
         // `TakeOr` only calls this function if the range has text. Since `index` demarks the last
         // code point and the exclusive end of the range, there must be a terminating code point
         // that is unnecessary for `self` to remain textual.
-        TakeOr::with(self, ..index, |text, _| {
+        Take::with(self, ..index, |text, _| {
             text.as_mut_string1()
                 .pop_or()
                 .none()
@@ -138,12 +138,12 @@ impl TString {
         })
     }
 
-    pub fn pop_grapheme_or(&mut self) -> PopOr<'_, Grapheme<'_>> {
+    pub fn pop_grapheme(&mut self) -> Pop<'_, Grapheme<'_>> {
         let (index, _) = self.grapheme_indices1().rev().first();
         // SAFETY: `index` demarks a grapheme and `TakeOr` only calls this function if the
         //         range is a valid string slice and has text, so splitting off the grapheme
         //         produces non-empty and valid UTF-8 on both sides and `self` remains textual.
-        TakeOr::with(self, ..index, |text, remainder| unsafe {
+        Take::with(self, ..index, |text, remainder| unsafe {
             Grapheme::from_string_unchecked(String::from_utf8_unchecked(
                 text.as_mut_string1()
                     .as_mut_vec1()
@@ -357,7 +357,7 @@ mod tests {
     ) {
         let mut text = TString::try_from(text).unwrap();
         let expected = TStr::try_from_str(expected).unwrap();
-        while text.pop_char_or().none().is_some() {}
+        while text.pop_char().or_none().is_some() {}
         assert_eq!(text, expected);
     }
 
@@ -381,7 +381,7 @@ mod tests {
     ) {
         let mut text = TString::try_from(text).unwrap();
         let expected = TStr::try_from_str(expected).unwrap();
-        while text.pop_grapheme_or().none().is_some() {}
+        while text.pop_grapheme().or_none().is_some() {}
         assert_eq!(text, expected);
     }
 }
