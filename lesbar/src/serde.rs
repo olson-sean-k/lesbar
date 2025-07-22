@@ -39,7 +39,7 @@ pub struct NonTextError;
 
 impl Display for NonTextError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{}", NON_TEXT_ERROR_MESSAGE)
+        write!(formatter, "{NON_TEXT_ERROR_MESSAGE}")
     }
 }
 
