@@ -55,9 +55,12 @@ pub mod prelude {
     //! Re-exports of recommended APIs and extension traits.
 
     pub use crate::tstr::TStr;
-    #[cfg(feature = "alloc")]
-    pub use crate::tstring::{CowTStrExt as _, TString};
     pub use crate::StrExt as _;
+    #[cfg(feature = "alloc")]
+    pub use {
+        crate::grapheme::CowGraphemeExt as _,
+        crate::tstring::{CowTStrExt as _, TString},
+    };
 }
 
 #[cfg(feature = "serde")]
@@ -68,7 +71,7 @@ use mitsein::NonEmpty;
 use crate::serde::{NonTextError, Serde};
 
 pub use lesbar_macros::{str1, tstr};
-pub use lesbar_text::{iter, Grapheme, StrExt};
+pub use lesbar_text::{grapheme, iter, StrExt};
 
 #[cfg_attr(
     feature = "serde",

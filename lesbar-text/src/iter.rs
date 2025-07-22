@@ -1,6 +1,6 @@
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::Grapheme;
+use crate::grapheme::Grapheme;
 
 #[derive(Clone, Debug)]
 pub struct Graphemes<'t> {
@@ -27,7 +27,7 @@ impl DoubleEndedIterator for Graphemes<'_> {
 }
 
 impl<'t> Iterator for Graphemes<'t> {
-    type Item = Grapheme<'t>;
+    type Item = &'t Grapheme;
 
     fn next(&mut self) -> Option<Self::Item> {
         // SAFETY: The `UnicodeSegmentation` implementation never emits empty `str`s as graphemes.
@@ -64,7 +64,7 @@ impl DoubleEndedIterator for GraphemeIndices<'_> {
 }
 
 impl<'t> Iterator for GraphemeIndices<'t> {
-    type Item = (usize, Grapheme<'t>);
+    type Item = (usize, &'t Grapheme);
 
     fn next(&mut self) -> Option<Self::Item> {
         // SAFETY: The `UnicodeSegmentation` implementation never emits empty `str`s as graphemes.

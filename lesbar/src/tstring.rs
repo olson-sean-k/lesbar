@@ -17,8 +17,9 @@ use mitsein::str1::Str1;
 use mitsein::string1::String1;
 use mitsein::Segmentation;
 
+use crate::grapheme::GraphemeBuf;
 use crate::tstr::TStr;
-use crate::{Grapheme, StrExt as _, Text};
+use crate::{StrExt as _, Text};
 
 pub type BoxedTStr = Box<TStr>;
 
@@ -149,13 +150,13 @@ impl TString {
         })
     }
 
-    pub fn pop_grapheme(&mut self) -> Pop<'_, Grapheme<'_>> {
+    pub fn pop_grapheme(&mut self) -> Pop<'_, GraphemeBuf> {
         let (index, _) = self.grapheme_indices1().rev().first();
         // SAFETY: `index` demarks a grapheme and `TakeOr` only calls this function if the
         //         range is a valid string slice and has text, so splitting off the grapheme
         //         produces non-empty and valid UTF-8 on both sides and `self` remains textual.
         Take::with(self, ..index, |text, remainder| unsafe {
-            Grapheme::from_string_unchecked(String::from_utf8_unchecked(
+            GraphemeBuf::from_string_unchecked(String::from_utf8_unchecked(
                 text.as_mut_string1()
                     .as_mut_vec1()
                     .segment(remainder.end..)
