@@ -33,7 +33,7 @@ Removing text from a `TString`:
 use lesbar::prelude::*;
 
 let mut text = TString::from(lesbar::tstr!("Raus damit."));
-let grapheme = text.pop_grapheme_or().none().unwrap();
+let grapheme = text.pop_grapheme().or_none().unwrap();
 
 assert_eq!(grapheme, ".");
 ```
