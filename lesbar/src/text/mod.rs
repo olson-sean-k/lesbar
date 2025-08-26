@@ -1,4 +1,6 @@
-//! A non-empty [`str`][prim@str] that represents legible text.
+//! Non-empty [string][prim@str] types that represent legible text.
+
+mod buf;
 
 #[cfg(feature = "alloc")]
 use alloc::borrow::ToOwned;
@@ -10,35 +12,38 @@ use mitsein::iter1::Iterator1;
 use mitsein::str1::Str1;
 
 use crate::iter::{GraphemeIndices, Graphemes};
+use crate::{Legible, StrExt as _};
+
 #[cfg(feature = "alloc")]
-use crate::tstring::{BoxedTStr, TString};
-use crate::{StrExt as _, Text};
+pub use crate::text::buf::*;
 
-pub type TStr = Text<str>;
+pub type Text = Legible<str>;
 
-impl TStr {
+impl Text {
     pub const fn from_str1_unchecked(text: &Str1) -> &Self {
-        // SAFETY: `Text` is `repr(transparent)`: `Str1` and `TStr` have the same representation.
-        unsafe { mem::transmute::<&'_ Str1, &'_ TStr>(text) }
+        // SAFETY: `Legible` is `repr(transparent)`: `Str1` and `Text` have the same
+        //         representation.
+        unsafe { mem::transmute::<&'_ Str1, &'_ Text>(text) }
     }
 
     pub const fn from_mut_str1_unchecked(text: &mut Str1) -> &mut Self {
-        // SAFETY: `Text` is `repr(transparent)`: `Str1` and `TStr` have the same representation.
-        unsafe { mem::transmute::<&'_ mut Str1, &'_ mut TStr>(text) }
+        // SAFETY: `Legible` is `repr(transparent)`: `Str1` and `Text` have the same
+        //         representation.
+        unsafe { mem::transmute::<&'_ mut Str1, &'_ mut Text>(text) }
     }
 
     pub fn try_from_str(text: &str) -> Result<&Self, &str> {
-        Str1::try_from_str(text).and_then(|text| TStr::try_from_str1(text).map_err(Str1::as_str))
+        Str1::try_from_str(text).and_then(|text| Text::try_from_str1(text).map_err(Str1::as_str))
     }
 
     pub fn try_from_mut_str(text: &mut str) -> Result<&mut Self, &mut str> {
         Str1::try_from_mut_str(text)
-            .and_then(|text| TStr::try_from_mut_str1(text).map_err(Str1::as_mut_str))
+            .and_then(|text| Text::try_from_mut_str1(text).map_err(Str1::as_mut_str))
     }
 
     pub fn try_from_str1(text: &Str1) -> Result<&Self, &Str1> {
         if text.has_text() {
-            Ok(TStr::from_str1_unchecked(text))
+            Ok(Text::from_str1_unchecked(text))
         }
         else {
             Err(text)
@@ -47,7 +52,7 @@ impl TStr {
 
     pub fn try_from_mut_str1(text: &mut Str1) -> Result<&mut Self, &mut Str1> {
         if text.has_text() {
-            Ok(TStr::from_mut_str1_unchecked(text))
+            Ok(Text::from_mut_str1_unchecked(text))
         }
         else {
             Err(text)
@@ -56,14 +61,14 @@ impl TStr {
 
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    pub fn into_tstring(self: BoxedTStr) -> TString {
-        TString::from(self)
+    pub fn into_text_buf(self: BoxedText) -> TextBuf {
+        TextBuf::from(self)
     }
 
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    pub fn to_tstring(&self) -> TString {
-        TString::from(self)
+    pub fn to_text_buf(&self) -> TextBuf {
+        TextBuf::from(self)
     }
 
     pub fn graphemes1(&self) -> Iterator1<Peekable<Graphemes<'_>>> {
@@ -91,37 +96,37 @@ impl TStr {
     }
 }
 
-impl AsMut<str> for TStr {
+impl AsMut<str> for Text {
     fn as_mut(&mut self) -> &mut str {
         self.as_mut_str()
     }
 }
 
-impl AsMut<Str1> for TStr {
+impl AsMut<Str1> for Text {
     fn as_mut(&mut self) -> &mut Str1 {
         self.as_mut_str1()
     }
 }
 
-impl AsRef<str> for TStr {
+impl AsRef<str> for Text {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl AsRef<Str1> for TStr {
+impl AsRef<Str1> for Text {
     fn as_ref(&self) -> &Str1 {
         self.as_str1()
     }
 }
 
-impl Debug for TStr {
+impl Debug for Text {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         write!(formatter, "{:?}", self.as_str())
     }
 }
 
-impl Deref for TStr {
+impl Deref for Text {
     type Target = Str1;
 
     fn deref(&self) -> &Self::Target {
@@ -129,45 +134,45 @@ impl Deref for TStr {
     }
 }
 
-impl DerefMut for TStr {
+impl DerefMut for Text {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_mut_str1()
     }
 }
 
-impl Display for TStr {
+impl Display for Text {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         write!(formatter, "{}", self.as_str())
     }
 }
 
-impl<'a> From<&'a TStr> for &'a str {
-    fn from(text: &'a TStr) -> Self {
+impl<'a> From<&'a Text> for &'a str {
+    fn from(text: &'a Text) -> Self {
         text.as_str()
     }
 }
 
-impl<'a> From<&'a mut TStr> for &'a mut str {
-    fn from(text: &'a mut TStr) -> Self {
+impl<'a> From<&'a mut Text> for &'a mut str {
+    fn from(text: &'a mut Text) -> Self {
         text.as_mut_str()
     }
 }
 
-impl<'a> From<&'a TStr> for &'a Str1 {
-    fn from(text: &'a TStr) -> Self {
+impl<'a> From<&'a Text> for &'a Str1 {
+    fn from(text: &'a Text) -> Self {
         text.as_str1()
     }
 }
 
-impl<'a> From<&'a mut TStr> for &'a mut Str1 {
-    fn from(text: &'a mut TStr) -> Self {
+impl<'a> From<&'a mut Text> for &'a mut Str1 {
+    fn from(text: &'a mut Text) -> Self {
         text.as_mut_str1()
     }
 }
 
-impl<T> PartialEq<&'_ T> for TStr
+impl<T> PartialEq<&'_ T> for Text
 where
-    TStr: PartialEq<T>,
+    Text: PartialEq<T>,
     T: ?Sized,
 {
     fn eq(&self, other: &&'_ T) -> bool {
@@ -175,13 +180,13 @@ where
     }
 }
 
-impl PartialEq<str> for TStr {
+impl PartialEq<str> for Text {
     fn eq(&self, other: &str) -> bool {
         self.as_str().eq(other)
     }
 }
 
-impl PartialEq<Str1> for TStr {
+impl PartialEq<Str1> for Text {
     fn eq(&self, other: &Str1) -> bool {
         self.as_str1().eq(other)
     }
@@ -189,43 +194,43 @@ impl PartialEq<Str1> for TStr {
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-impl ToOwned for TStr {
-    type Owned = TString;
+impl ToOwned for Text {
+    type Owned = TextBuf;
 
     fn to_owned(&self) -> Self::Owned {
-        TString::from(self)
+        TextBuf::from(self)
     }
 }
 
-impl<'a> TryFrom<&'a str> for &'a TStr {
+impl<'a> TryFrom<&'a str> for &'a Text {
     type Error = &'a str;
 
     fn try_from(text: &'a str) -> Result<Self, Self::Error> {
-        TStr::try_from_str(text)
+        Text::try_from_str(text)
     }
 }
 
-impl<'a> TryFrom<&'a mut str> for &'a mut TStr {
+impl<'a> TryFrom<&'a mut str> for &'a mut Text {
     type Error = &'a mut str;
 
     fn try_from(text: &'a mut str) -> Result<Self, Self::Error> {
-        TStr::try_from_mut_str(text)
+        Text::try_from_mut_str(text)
     }
 }
 
-impl<'a> TryFrom<&'a Str1> for &'a TStr {
+impl<'a> TryFrom<&'a Str1> for &'a Text {
     type Error = &'a Str1;
 
     fn try_from(text: &'a Str1) -> Result<Self, Self::Error> {
-        TStr::try_from_str1(text)
+        Text::try_from_str1(text)
     }
 }
 
-impl<'a> TryFrom<&'a mut Str1> for &'a mut TStr {
+impl<'a> TryFrom<&'a mut Str1> for &'a mut Text {
     type Error = &'a mut Str1;
 
     fn try_from(text: &'a mut Str1) -> Result<Self, Self::Error> {
-        TStr::try_from_mut_str1(text)
+        Text::try_from_mut_str1(text)
     }
 }
 

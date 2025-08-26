@@ -5,10 +5,9 @@ use core::fmt::{self, Debug, Display, Formatter};
 use mitsein::NonEmpty;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::Text;
+use crate::Legible;
 
-const NON_TEXT_ERROR_MESSAGE: &str =
-    "failed to deserialize textual string: no legible text content";
+const NON_TEXT_ERROR_MESSAGE: &str = "failed to deserialize string: no legible text content";
 
 #[derive(Debug, Deserialize, Serialize)]
 #[repr(transparent)]
@@ -17,20 +16,20 @@ pub struct Serde<T> {
     text: T,
 }
 
-impl<T> From<Text<T>> for Serde<NonEmpty<T>> {
-    fn from(text: Text<T>) -> Self {
+impl<T> From<Legible<T>> for Serde<NonEmpty<T>> {
+    fn from(text: Legible<T>) -> Self {
         Serde { text: text.text }
     }
 }
 
-impl<T, U> TryFrom<Serde<U>> for Text<T>
+impl<T, U> TryFrom<Serde<U>> for Legible<T>
 where
-    Text<T>: TryFrom<U>,
+    Legible<T>: TryFrom<U>,
 {
     type Error = NonTextError;
 
     fn try_from(text: Serde<U>) -> Result<Self, Self::Error> {
-        Text::try_from(text.text).map_err(|_| NonTextError)
+        Legible::try_from(text.text).map_err(|_| NonTextError)
     }
 }
 

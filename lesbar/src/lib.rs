@@ -1,10 +1,10 @@
-//! Lesbar provides string types that must encode legible text.
+//! Lesbar provides non-empty string types that must represent legible text.
 //!
 //! At time of writing, `rustdoc` ignores input type parameters in the "Methods from
 //! `Deref<Target = _>`" section. For types that implement `Deref<Target = NonEmpty<_>>`, **the API
 //! documentation may be misleading** and list all methods of [`NonEmpty`] regardless of its input
 //! type parameter. This is mostly a problem for types that dereference to [`Str1`], such as
-//! [`TStr`]. See [this `rustdoc` bug](https://github.com/rust-lang/rust/issues/24686).
+//! [`Text`]. See [this `rustdoc` bug](https://github.com/rust-lang/rust/issues/24686).
 //!
 //! # Integrations and Cargo Features
 //!
@@ -16,13 +16,13 @@
 //!
 //! | Feature     | Default | Primary Dependency | Description                                         |
 //! |-------------|---------|--------------------|-----------------------------------------------------|
-//! | `alloc`     | Yes     | [`alloc`]          | Legible string buffers, like [`TString`].           |
+//! | `alloc`     | Yes     | [`alloc`]          | Legible string buffer types like [`TextBuf`].       |
 //! | `serde`     | No      | [`serde`]          | De/serialization of legible strings with [`serde`]. |
 //!
-//! [`TStr`]: crate::tstr::TStr
-//! [`TString`]: crate::tstring::TString
 //! [`serde`]: https://crates.io/crates/serde
 //! [`Str1`]: mitsein::str1::Str1
+//! [`Text`]: crate::text::Text
+//! [`TextBuf`]: crate::text::TextBuf
 
 // SAFETY: This crate is somewhat more conservative than the `mitsein` crate regarding unsafe code.
 //         While it uses unsafe code, this is only done when strictly necessary (mostly for
@@ -48,18 +48,17 @@ extern crate self as lesbar;
 
 mod serde;
 
-pub mod tstr;
-pub mod tstring;
+pub mod text;
 
 pub mod prelude {
     //! Re-exports of recommended APIs and extension traits.
 
-    pub use crate::tstr::TStr;
+    pub use crate::text::Text;
     pub use crate::StrExt as _;
     #[cfg(feature = "alloc")]
     pub use {
         crate::grapheme::CowGraphemeExt as _,
-        crate::tstring::{CowTStrExt as _, TString},
+        crate::text::{CowTextExt as _, TextBuf},
     };
 }
 
@@ -70,7 +69,7 @@ use mitsein::NonEmpty;
 #[cfg(feature = "serde")]
 use crate::serde::{NonTextError, Serde};
 
-pub use lesbar_macros::{str1, tstr};
+pub use lesbar_macros::{str1, text};
 pub use lesbar_text::{grapheme, iter, StrExt};
 
 #[cfg_attr(
@@ -95,14 +94,14 @@ pub use lesbar_text::{grapheme, iter, StrExt};
 // `NonEmpty` also implements these traits with bounds on `T`.
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
-pub struct Text<T>
+pub struct Legible<T>
 where
     T: ?Sized,
 {
     text: NonEmpty<T>,
 }
 
-impl<T> AsRef<T> for Text<T> {
+impl<T> AsRef<T> for Legible<T> {
     fn as_ref(&self) -> &T {
         self.text.as_ref()
     }

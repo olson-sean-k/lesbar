@@ -18,55 +18,55 @@ use mitsein::string1::String1;
 use mitsein::Segmentation;
 
 use crate::grapheme::GraphemeBuf;
-use crate::tstr::TStr;
-use crate::{StrExt as _, Text};
+use crate::text::Text;
+use crate::{Legible, StrExt as _};
 
-pub type BoxedTStr = Box<TStr>;
+pub type BoxedText = Box<Text>;
 
-pub trait BoxedTStrExt {
+pub trait BoxedTextExt {
     fn from_boxed_str1_unchecked(text: BoxedStr1) -> Self;
 
     fn into_boxed_str1(self) -> BoxedStr1;
 }
 
-impl BoxedTStrExt for BoxedTStr {
+impl BoxedTextExt for BoxedText {
     fn from_boxed_str1_unchecked(text: BoxedStr1) -> Self {
         let text = Box::into_raw(text);
         // SAFETY: Client code is responsible for asserting that the input string has legible text.
-        //         This transmutation is safe, because `Str1` and `TStr` have the same
-        //         representation (`TStr` is `repr(transparent)`). Moreover, the allocator only
+        //         This transmutation is safe, because `Str1` and `Text` have the same
+        //         representation (`Text` is `repr(transparent)`). Moreover, the allocator only
         //         requires that the memory location and layout are the same when deallocating, so
         //         dropping the transmuted `Box` is sound.
-        unsafe { Box::from_raw(text as *mut TStr) }
+        unsafe { Box::from_raw(text as *mut Text) }
     }
 
     fn into_boxed_str1(self) -> BoxedStr1 {
         let text = Box::into_raw(self);
-        // SAFETY: This transmutation is safe, because `Str1` and `TStr` have the same
-        //         representation (`TStr` is `repr(transparent)`). Moreover, the allocator only
+        // SAFETY: This transmutation is safe, because `Str1` and `Text` have the same
+        //         representation (`Text` is `repr(transparent)`). Moreover, the allocator only
         //         requires that the memory location and layout are the same when deallocating, so
         //         dropping the transmuted `Box` is sound.
         unsafe { Box::from_raw(text as *mut Str1) }
     }
 }
 
-pub type CowTStr<'a> = Cow<'a, TStr>;
+pub type CowText<'a> = Cow<'a, Text>;
 
-pub trait CowTStrExt<'a> {}
+pub trait CowTextExt<'a> {}
 
-impl<'a> CowTStrExt<'a> for CowTStr<'a> {}
+impl<'a> CowTextExt<'a> for CowText<'a> {}
 
 pub type Pop<'t, T> = Take<'t, T, RangeTo<usize>>;
 
 #[derive(Debug)]
 pub struct Take<'t, T, N = ()> {
-    text: &'t mut TString,
+    text: &'t mut TextBuf,
     remainder: N,
-    many: fn(&'t mut TString, N) -> T,
+    many: fn(&'t mut TextBuf, N) -> T,
 }
 
 impl<'t, T, N> Take<'t, T, N> {
-    const fn with(text: &'t mut TString, remainder: N, many: fn(&mut TString, N) -> T) -> Self {
+    const fn with(text: &'t mut TextBuf, remainder: N, many: fn(&mut TextBuf, N) -> T) -> Self {
         Take {
             text,
             remainder,
@@ -81,7 +81,7 @@ where
 {
     fn take_or_else<E, F>(self, one: F) -> Result<T, E>
     where
-        F: FnOnce(&'t mut TString, N) -> E,
+        F: FnOnce(&'t mut TextBuf, N) -> E,
     {
         let Take {
             text,
@@ -126,11 +126,11 @@ impl<'t, T> Take<'t, T, RangeTo<usize>> {
     }
 }
 
-pub type TString = Text<String>;
+pub type TextBuf = Legible<String>;
 
-impl TString {
+impl TextBuf {
     pub const fn from_string1_unchecked(text: String1) -> Self {
-        TString { text }
+        TextBuf { text }
     }
 
     pub fn into_string1(self) -> String1 {
@@ -165,16 +165,16 @@ impl TString {
         })
     }
 
-    pub fn leak<'a>(self) -> &'a TStr {
-        TStr::from_str1_unchecked(self.text.leak())
+    pub fn leak<'a>(self) -> &'a Text {
+        Text::from_str1_unchecked(self.text.leak())
     }
 
-    pub fn as_tstr(&self) -> &TStr {
-        TStr::from_str1_unchecked(self.text.as_str1())
+    pub fn as_text(&self) -> &Text {
+        Text::from_str1_unchecked(self.text.as_str1())
     }
 
-    pub fn as_mut_tstr(&mut self) -> &mut TStr {
-        TStr::from_mut_str1_unchecked(self.text.as_mut_str1())
+    pub fn as_mut_text(&mut self) -> &mut Text {
+        Text::from_mut_str1_unchecked(self.text.as_mut_str1())
     }
 
     const fn as_string1(&self) -> &String1 {
@@ -186,83 +186,83 @@ impl TString {
     }
 }
 
-impl AsMut<Str1> for TString {
+impl AsMut<Str1> for TextBuf {
     fn as_mut(&mut self) -> &mut Str1 {
-        self.as_mut_tstr().as_mut_str1()
+        self.as_mut_text().as_mut_str1()
     }
 }
 
-impl AsMut<TStr> for TString {
-    fn as_mut(&mut self) -> &mut TStr {
-        self.as_mut_tstr()
+impl AsMut<Text> for TextBuf {
+    fn as_mut(&mut self) -> &mut Text {
+        self.as_mut_text()
     }
 }
 
-impl AsRef<Str1> for TString {
+impl AsRef<Str1> for TextBuf {
     fn as_ref(&self) -> &Str1 {
-        self.as_tstr().as_str1()
+        self.as_text().as_str1()
     }
 }
 
-impl AsRef<TStr> for TString {
-    fn as_ref(&self) -> &TStr {
-        self.as_tstr()
+impl AsRef<Text> for TextBuf {
+    fn as_ref(&self) -> &Text {
+        self.as_text()
     }
 }
 
-impl Borrow<TStr> for TString {
-    fn borrow(&self) -> &TStr {
-        self.as_tstr()
+impl Borrow<Text> for TextBuf {
+    fn borrow(&self) -> &Text {
+        self.as_text()
     }
 }
 
-impl BorrowMut<TStr> for TString {
-    fn borrow_mut(&mut self) -> &mut TStr {
-        self.as_mut_tstr()
+impl BorrowMut<Text> for TextBuf {
+    fn borrow_mut(&mut self) -> &mut Text {
+        self.as_mut_text()
     }
 }
 
-impl Debug for TString {
+impl Debug for TextBuf {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         write!(formatter, "{:?}", self.as_str())
     }
 }
 
-impl Deref for TString {
-    type Target = TStr;
+impl Deref for TextBuf {
+    type Target = Text;
 
     fn deref(&self) -> &Self::Target {
-        self.as_tstr()
+        self.as_text()
     }
 }
 
-impl DerefMut for TString {
+impl DerefMut for TextBuf {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.as_mut_tstr()
+        self.as_mut_text()
     }
 }
 
-impl Display for TString {
+impl Display for TextBuf {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         write!(formatter, "{}", self.as_str())
     }
 }
 
-impl From<BoxedTStr> for TString {
-    fn from(text: BoxedTStr) -> Self {
-        TString::from_string1_unchecked(String1::from(text.into_boxed_str1()))
+impl From<BoxedText> for TextBuf {
+    fn from(text: BoxedText) -> Self {
+        TextBuf::from_string1_unchecked(String1::from(text.into_boxed_str1()))
     }
 }
 
-impl<'a> From<&'a TStr> for TString {
-    fn from(text: &'a TStr) -> Self {
-        TString::from_string1_unchecked(String1::from(text.as_str1()))
+impl<'a> From<&'a Text> for TextBuf {
+    fn from(text: &'a Text) -> Self {
+        TextBuf::from_string1_unchecked(String1::from(text.as_str1()))
     }
 }
 
-impl<T> PartialEq<&'_ T> for TString
+impl<T> PartialEq<&'_ T> for TextBuf
 where
-    TString: PartialEq<T>,
+    TextBuf: PartialEq<T>,
     T: ?Sized,
 {
     fn eq(&self, other: &&'_ T) -> bool {
@@ -270,71 +270,71 @@ where
     }
 }
 
-impl PartialEq<Cow<'_, str>> for TString {
+impl PartialEq<Cow<'_, str>> for TextBuf {
     fn eq(&self, other: &Cow<'_, str>) -> bool {
         self.as_str().eq(other.as_ref())
     }
 }
 
-impl PartialEq<CowStr1<'_>> for TString {
+impl PartialEq<CowStr1<'_>> for TextBuf {
     fn eq(&self, other: &CowStr1<'_>) -> bool {
         self.as_str1().eq(other.as_ref())
     }
 }
 
-impl PartialEq<CowTStr<'_>> for TString {
-    fn eq(&self, other: &CowTStr<'_>) -> bool {
-        self.as_tstr().eq(other.as_ref())
+impl PartialEq<CowText<'_>> for TextBuf {
+    fn eq(&self, other: &CowText<'_>) -> bool {
+        self.as_text().eq(other.as_ref())
     }
 }
 
-impl PartialEq<str> for TString {
+impl PartialEq<str> for TextBuf {
     fn eq(&self, other: &str) -> bool {
         self.as_str().eq(other)
     }
 }
 
-impl PartialEq<Str1> for TString {
+impl PartialEq<Str1> for TextBuf {
     fn eq(&self, other: &Str1) -> bool {
         self.as_str1().eq(other)
     }
 }
 
-impl PartialEq<String1> for TString {
+impl PartialEq<String1> for TextBuf {
     fn eq(&self, other: &String1) -> bool {
         self.as_string1().eq(other)
     }
 }
 
-impl PartialEq<TStr> for TString {
-    fn eq(&self, other: &TStr) -> bool {
-        self.as_tstr().eq(other)
+impl PartialEq<Text> for TextBuf {
+    fn eq(&self, other: &Text) -> bool {
+        self.as_text().eq(other)
     }
 }
 
-impl<'a> TryFrom<&'a str> for TString {
+impl<'a> TryFrom<&'a str> for TextBuf {
     type Error = &'a str;
 
     fn try_from(text: &'a str) -> Result<Self, Self::Error> {
-        String1::try_from(text).and_then(|text1| TString::try_from(text1).map_err(|_| text))
+        String1::try_from(text).and_then(|text1| TextBuf::try_from(text1).map_err(|_| text))
     }
 }
 
-impl TryFrom<String> for TString {
+impl TryFrom<String> for TextBuf {
     type Error = String;
 
     fn try_from(text: String) -> Result<Self, Self::Error> {
         String1::try_from(text)
-            .and_then(|text| TString::try_from(text).map_err(String1::into_string))
+            .and_then(|text| TextBuf::try_from(text).map_err(String1::into_string))
     }
 }
 
-impl TryFrom<String1> for TString {
+impl TryFrom<String1> for TextBuf {
     type Error = String1;
 
     fn try_from(text: String1) -> Result<Self, Self::Error> {
         if text.has_text() {
-            Ok(TString::from_string1_unchecked(text))
+            Ok(TextBuf::from_string1_unchecked(text))
         }
         else {
             Err(text)
@@ -349,8 +349,7 @@ mod tests {
 
     use rstest::rstest;
 
-    use crate::tstr::TStr;
-    use crate::tstring::TString;
+    use crate::text::{Text, TextBuf};
 
     #[rstest]
     #[case::only_one_char("A", "A")]
@@ -363,12 +362,12 @@ mod tests {
     #[case::non_text_prefix("\u{200B}\u{E064}ZWSP+PUC", "\u{200B}\u{E064}")]
     #[case::combining("ä", "ä")]
     #[case::combining("\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}", "\u{1F3F3}")]
-    fn pop_char_or_from_tstring_until_exhausted_then_tstring_eq(
+    fn pop_char_from_text_buf_until_exhausted_then_text_buf_eq(
         #[case] text: &str,
         #[case] expected: &str,
     ) {
-        let mut text = TString::try_from(text).unwrap();
-        let expected = TStr::try_from_str(expected).unwrap();
+        let mut text = TextBuf::try_from(text).unwrap();
+        let expected = Text::try_from_str(expected).unwrap();
         while text.pop_char().or_false() {}
         assert_eq!(text, expected);
     }
@@ -387,12 +386,12 @@ mod tests {
         "\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}",
         "\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}"
     )]
-    fn pop_grapheme_or_from_tstring_until_exhausted_then_tstring_eq(
+    fn pop_grapheme_from_text_buf_until_exhausted_then_text_buf_eq(
         #[case] text: &str,
         #[case] expected: &str,
     ) {
-        let mut text = TString::try_from(text).unwrap();
-        let expected = TStr::try_from_str(expected).unwrap();
+        let mut text = TextBuf::try_from(text).unwrap();
+        let expected = Text::try_from_str(expected).unwrap();
         while text.pop_grapheme().or_false() {}
         assert_eq!(text, expected);
     }
