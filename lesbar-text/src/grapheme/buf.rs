@@ -9,6 +9,7 @@ use mitsein::str1::Str1;
 use mitsein::string1::String1;
 
 use crate::grapheme::Grapheme;
+use crate::RuneError;
 
 pub type CowGrapheme<'t> = Cow<'t, Grapheme>;
 
@@ -114,5 +115,30 @@ impl From<GraphemeBuf> for String {
 impl From<GraphemeBuf> for String1 {
     fn from(grapheme: GraphemeBuf) -> Self {
         grapheme.0
+    }
+}
+
+impl TryFrom<String> for GraphemeBuf {
+    type Error = RuneError<String>;
+
+    fn try_from(text: String) -> Result<Self, Self::Error> {
+        String1::try_from(text)
+            .map_err(RuneError::from_invalid)
+            .and_then(|text| {
+                GraphemeBuf::try_from(text).map_err(|error| error.map(String1::into_string))
+            })
+    }
+}
+
+impl TryFrom<String1> for GraphemeBuf {
+    type Error = RuneError<String1>;
+
+    fn try_from(text: String1) -> Result<Self, Self::Error> {
+        if Grapheme::try_from_str1(text.as_str1()).is_ok() {
+            Ok(GraphemeBuf(text))
+        }
+        else {
+            Err(RuneError::from_invalid(text))
+        }
     }
 }

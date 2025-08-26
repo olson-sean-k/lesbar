@@ -8,6 +8,8 @@ use mitsein::str1::Str1;
 use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
 use unicode_width::UnicodeWidthStr;
 
+use crate::RuneError;
+
 #[cfg(feature = "alloc")]
 pub use crate::grapheme::buf::*;
 
@@ -29,16 +31,18 @@ impl Grapheme {
         unsafe { mem::transmute::<&'_ Str1, &'_ Grapheme>(text) }
     }
 
-    pub fn try_from_str(text: &str) -> Result<&Self, &str> {
-        Grapheme::try_from_str1(Str1::try_from_str(text)?).map_err(From::from)
+    pub fn try_from_str(text: &str) -> Result<&Self, RuneError<&str>> {
+        Str1::try_from_str(text)
+            .map_err(RuneError::from_invalid)
+            .and_then(|text| Grapheme::try_from_str1(text).map_err(|error| error.map(Str1::as_str)))
     }
 
-    pub fn try_from_str1(text: &Str1) -> Result<&Self, &Str1> {
+    pub fn try_from_str1(text: &Str1) -> Result<&Self, RuneError<&Str1>> {
         if crate::is_grapheme(text) {
             Ok(Grapheme::from_str1_unchecked(text))
         }
         else {
-            Err(text)
+            Err(RuneError::from_invalid(text))
         }
     }
 }
@@ -127,7 +131,7 @@ impl ToOwned for Grapheme {
 }
 
 impl<'t> TryFrom<&'t str> for &'t Grapheme {
-    type Error = &'t str;
+    type Error = RuneError<&'t str>;
 
     fn try_from(text: &'t str) -> Result<Self, Self::Error> {
         Grapheme::try_from_str(text)
@@ -135,7 +139,7 @@ impl<'t> TryFrom<&'t str> for &'t Grapheme {
 }
 
 impl<'t> TryFrom<&'t Str1> for &'t Grapheme {
-    type Error = &'t Str1;
+    type Error = RuneError<&'t Str1>;
 
     fn try_from(text: &'t Str1) -> Result<Self, Self::Error> {
         Grapheme::try_from_str1(text)

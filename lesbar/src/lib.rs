@@ -64,13 +64,83 @@ pub mod prelude {
 
 #[cfg(feature = "serde")]
 use ::serde::{Deserialize, Serialize};
+#[cfg(feature = "alloc")]
+use alloc::borrow::ToOwned;
+use core::error::Error;
+use core::fmt::{self, Debug, Display, Formatter};
 use mitsein::NonEmpty;
 
 #[cfg(feature = "serde")]
-use crate::serde::{NonTextError, Serde};
+use crate::serde::Serde;
 
 pub use lesbar_macros::{str1, text};
 pub use lesbar_text::{grapheme, iter, StrExt};
+
+const ILLEGIBLE_ERROR_MESSAGE: &str = "failed to construct text: no legible content";
+
+// TODO: Implement `From<mitsein::EmptyError<_>>`.
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+pub struct IllegibleError<T> {
+    illegible: T,
+}
+
+impl<T> IllegibleError<T> {
+    fn from_illegible(illegible: T) -> Self {
+        IllegibleError { illegible }
+    }
+
+    pub fn into_illegible(self) -> T {
+        self.illegible
+    }
+
+    fn map<U, F>(self, f: F) -> IllegibleError<U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        IllegibleError {
+            illegible: f(self.illegible),
+        }
+    }
+
+    pub fn take(self) -> (T, IllegibleError<()>) {
+        (self.illegible, IllegibleError::from_illegible(()))
+    }
+
+    pub fn take_and_drop(self) -> IllegibleError<()> {
+        self.take().1
+    }
+
+    pub fn as_illegible(&self) -> &T {
+        &self.illegible
+    }
+}
+
+impl<T> IllegibleError<&'_ T> {
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    pub fn into_owning(self) -> IllegibleError<T::Owned>
+    where
+        T: ToOwned,
+    {
+        IllegibleError::from_illegible(self.illegible.to_owned())
+    }
+}
+
+impl<T> Debug for IllegibleError<T> {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("IllegibleError")
+            .finish_non_exhaustive()
+    }
+}
+
+impl<T> Display for IllegibleError<T> {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{ILLEGIBLE_ERROR_MESSAGE}")
+    }
+}
+
+impl<T> Error for IllegibleError<T> {}
 
 #[cfg_attr(
     feature = "serde",
@@ -80,7 +150,7 @@ pub use lesbar_text::{grapheme, iter, StrExt};
     feature = "serde",
     serde(
         bound(
-            deserialize = "Self: TryFrom<Serde<NonEmpty<T>>, Error = NonTextError>, \
+            deserialize = "Self: TryFrom<Serde<NonEmpty<T>>, Error = IllegibleError<NonEmpty<T>>>, \
                            NonEmpty<T>: Deserialize<'de>, \
                            T: Clone,",
             serialize = "NonEmpty<T>: Serialize, \

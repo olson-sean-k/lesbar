@@ -7,9 +7,16 @@ extern crate alloc;
 pub mod grapheme;
 pub mod iter;
 
+#[cfg(feature = "alloc")]
+use alloc::borrow::ToOwned;
+use core::error::Error;
+use core::fmt::{self, Debug, Display, Formatter};
 use unicode_width::UnicodeWidthStr;
 
 use crate::iter::{GraphemeIndices, Graphemes};
+
+const RUNE_ERROR_MESSAGE: &str =
+    "encountered an invalid code point, character, or grapheme cluster";
 
 pub trait StrExt {
     fn graphemes(&self) -> Graphemes<'_>;
@@ -43,13 +50,74 @@ impl StrExt for str {
     }
 }
 
+// TODO: Implement `From<mitsein::EmptyError<_>>`.
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+pub struct RuneError<T> {
+    invalid: T,
+}
+
+impl<T> RuneError<T> {
+    fn from_invalid(invalid: T) -> Self {
+        RuneError { invalid }
+    }
+
+    pub fn into_invalid(self) -> T {
+        self.invalid
+    }
+
+    fn map<U, F>(self, f: F) -> RuneError<U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        RuneError {
+            invalid: f(self.invalid),
+        }
+    }
+
+    pub fn take(self) -> (T, RuneError<()>) {
+        (self.invalid, RuneError::from_invalid(()))
+    }
+
+    pub fn take_and_drop(self) -> RuneError<()> {
+        self.take().1
+    }
+
+    pub fn as_invalid(&self) -> &T {
+        &self.invalid
+    }
+}
+
+impl<T> RuneError<&'_ T> {
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    pub fn into_owning(self) -> RuneError<T::Owned>
+    where
+        T: ToOwned,
+    {
+        RuneError::from_invalid(self.invalid.to_owned())
+    }
+}
+
+impl<T> Debug for RuneError<T> {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter.debug_struct("RuneError").finish_non_exhaustive()
+    }
+}
+
+impl<T> Display for RuneError<T> {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{RUNE_ERROR_MESSAGE}")
+    }
+}
+
+impl<T> Error for RuneError<T> {}
+
 fn is_grapheme(text: &str) -> bool {
     matches!(text.graphemes().take(2).enumerate().last(), Some((0, _)))
 }
 
 #[cfg(test)]
 mod tests {
-    extern crate alloc;
     extern crate std;
 
     use rstest::rstest;

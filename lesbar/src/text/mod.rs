@@ -12,7 +12,7 @@ use mitsein::iter1::Iterator1;
 use mitsein::str1::Str1;
 
 use crate::iter::{GraphemeIndices, Graphemes};
-use crate::{Legible, StrExt as _};
+use crate::{IllegibleError, Legible, StrExt as _};
 
 #[cfg(feature = "alloc")]
 pub use crate::text::buf::*;
@@ -32,30 +32,35 @@ impl Text {
         unsafe { mem::transmute::<&'_ mut Str1, &'_ mut Text>(text) }
     }
 
-    pub fn try_from_str(text: &str) -> Result<&Self, &str> {
-        Str1::try_from_str(text).and_then(|text| Text::try_from_str1(text).map_err(Str1::as_str))
+    pub fn try_from_str(text: &str) -> Result<&Self, IllegibleError<&str>> {
+        Str1::try_from_str(text)
+            .map_err(IllegibleError::from_illegible)
+            .and_then(|text1| Text::try_from_str1(text1).map_err(|error| error.map(Str1::as_str)))
     }
 
-    pub fn try_from_mut_str(text: &mut str) -> Result<&mut Self, &mut str> {
+    pub fn try_from_mut_str(text: &mut str) -> Result<&mut Self, IllegibleError<&mut str>> {
         Str1::try_from_mut_str(text)
-            .and_then(|text| Text::try_from_mut_str1(text).map_err(Str1::as_mut_str))
+            .map_err(IllegibleError::from_illegible)
+            .and_then(|text| {
+                Text::try_from_mut_str1(text).map_err(|error| error.map(Str1::as_mut_str))
+            })
     }
 
-    pub fn try_from_str1(text: &Str1) -> Result<&Self, &Str1> {
+    pub fn try_from_str1(text: &Str1) -> Result<&Self, IllegibleError<&Str1>> {
         if text.has_text() {
             Ok(Text::from_str1_unchecked(text))
         }
         else {
-            Err(text)
+            Err(IllegibleError::from_illegible(text))
         }
     }
 
-    pub fn try_from_mut_str1(text: &mut Str1) -> Result<&mut Self, &mut Str1> {
+    pub fn try_from_mut_str1(text: &mut Str1) -> Result<&mut Self, IllegibleError<&mut Str1>> {
         if text.has_text() {
             Ok(Text::from_mut_str1_unchecked(text))
         }
         else {
-            Err(text)
+            Err(IllegibleError::from_illegible(text))
         }
     }
 
@@ -203,7 +208,7 @@ impl ToOwned for Text {
 }
 
 impl<'a> TryFrom<&'a str> for &'a Text {
-    type Error = &'a str;
+    type Error = IllegibleError<&'a str>;
 
     fn try_from(text: &'a str) -> Result<Self, Self::Error> {
         Text::try_from_str(text)
@@ -211,7 +216,7 @@ impl<'a> TryFrom<&'a str> for &'a Text {
 }
 
 impl<'a> TryFrom<&'a mut str> for &'a mut Text {
-    type Error = &'a mut str;
+    type Error = IllegibleError<&'a mut str>;
 
     fn try_from(text: &'a mut str) -> Result<Self, Self::Error> {
         Text::try_from_mut_str(text)
@@ -219,7 +224,7 @@ impl<'a> TryFrom<&'a mut str> for &'a mut Text {
 }
 
 impl<'a> TryFrom<&'a Str1> for &'a Text {
-    type Error = &'a Str1;
+    type Error = IllegibleError<&'a Str1>;
 
     fn try_from(text: &'a Str1) -> Result<Self, Self::Error> {
         Text::try_from_str1(text)
@@ -227,7 +232,7 @@ impl<'a> TryFrom<&'a Str1> for &'a Text {
 }
 
 impl<'a> TryFrom<&'a mut Str1> for &'a mut Text {
-    type Error = &'a mut Str1;
+    type Error = IllegibleError<&'a mut Str1>;
 
     fn try_from(text: &'a mut Str1) -> Result<Self, Self::Error> {
         Text::try_from_mut_str1(text)

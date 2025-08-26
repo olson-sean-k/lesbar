@@ -57,3 +57,4 @@ optional = true
 
 [dev-dependencies]
 rstest.workspace = true
+serde_test = "1.0"

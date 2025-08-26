@@ -19,7 +19,7 @@ use mitsein::Segmentation;
 
 use crate::grapheme::GraphemeBuf;
 use crate::text::Text;
-use crate::{Legible, StrExt as _};
+use crate::{IllegibleError, Legible, StrExt as _};
 
 pub type BoxedText = Box<Text>;
 
@@ -313,43 +313,75 @@ impl PartialEq<Text> for TextBuf {
 }
 
 impl<'a> TryFrom<&'a str> for TextBuf {
-    type Error = &'a str;
+    type Error = IllegibleError<&'a str>;
 
     fn try_from(text: &'a str) -> Result<Self, Self::Error> {
-        String1::try_from(text).and_then(|text1| TextBuf::try_from(text1).map_err(|_| text))
+        String1::try_from(text)
+            .map_err(IllegibleError::from_illegible)
+            .and_then(|text1| TextBuf::try_from(text1).map_err(|error| error.map(|_| text)))
     }
 }
 
 impl TryFrom<String> for TextBuf {
-    type Error = String;
+    type Error = IllegibleError<String>;
 
     fn try_from(text: String) -> Result<Self, Self::Error> {
         String1::try_from(text)
-            .and_then(|text| TextBuf::try_from(text).map_err(String1::into_string))
+            .map_err(IllegibleError::from_illegible)
+            .and_then(|text1| {
+                TextBuf::try_from(text1).map_err(|error| error.map(String1::into_string))
+            })
+    }
+}
+
+impl<'a> TryFrom<&'a Str1> for TextBuf {
+    type Error = IllegibleError<&'a Str1>;
+
+    fn try_from(text: &'a Str1) -> Result<Self, Self::Error> {
+        TextBuf::try_from(String1::from(text)).map_err(|error| error.map(|_| text))
     }
 }
 
 impl TryFrom<String1> for TextBuf {
-    type Error = String1;
+    type Error = IllegibleError<String1>;
 
     fn try_from(text: String1) -> Result<Self, Self::Error> {
         if text.has_text() {
             Ok(TextBuf::from_string1_unchecked(text))
         }
         else {
-            Err(text)
+            Err(IllegibleError::from_illegible(text))
         }
     }
 }
 
 #[cfg(test)]
+pub mod harness {
+    use rstest::fixture;
+
+    use crate::text::TextBuf;
+
+    #[fixture]
+    pub fn text() -> TextBuf {
+        TextBuf::try_from("legible").unwrap()
+    }
+}
+
+#[cfg(test)]
 mod tests {
-    extern crate alloc;
     extern crate std;
 
     use rstest::rstest;
+    #[cfg(feature = "serde")]
+    use {alloc::vec::Vec, serde_test::Token};
 
     use crate::text::{Text, TextBuf};
+    #[cfg(feature = "serde")]
+    use {
+        crate::serde,
+        crate::serde::harness::{illegible, legible},
+        crate::text::buf::harness::text,
+    };
 
     #[rstest]
     #[case::only_one_char("A", "A")]
@@ -394,5 +426,24 @@ mod tests {
         let expected = Text::try_from_str(expected).unwrap();
         while text.pop_grapheme().or_false() {}
         assert_eq!(text, expected);
+    }
+
+    #[cfg(feature = "serde")]
+    #[rstest]
+    fn de_serialize_text_buf_into_and_from_tokens_eq(
+        text: TextBuf,
+        legible: impl Iterator<Item = Token>,
+    ) {
+        serde::harness::assert_into_and_from_tokens_eq::<_, Vec<_>>(text, legible);
+    }
+
+    // This test asserts an illegible error given **non-empty** but illegible text. Empty strings
+    // cause an earlier and distinct failure in `String1`.
+    #[cfg(feature = "serde")]
+    #[rstest]
+    fn deserialize_text_buf_from_empty_tokens_then_illegible_error(
+        illegible: impl Iterator<Item = Token>,
+    ) {
+        serde::harness::assert_deserialize_error_eq_illegible_error::<TextBuf, Vec<_>>(illegible);
     }
 }

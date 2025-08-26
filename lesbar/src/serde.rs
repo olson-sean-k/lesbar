@@ -1,13 +1,9 @@
 #![cfg(feature = "serde")]
 
-use core::error::Error;
-use core::fmt::{self, Debug, Display, Formatter};
 use mitsein::NonEmpty;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::Legible;
-
-const NON_TEXT_ERROR_MESSAGE: &str = "failed to deserialize string: no legible text content";
+use crate::{IllegibleError, Legible};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[repr(transparent)]
@@ -24,22 +20,50 @@ impl<T> From<Legible<T>> for Serde<NonEmpty<T>> {
 
 impl<T, U> TryFrom<Serde<U>> for Legible<T>
 where
-    Legible<T>: TryFrom<U>,
+    Legible<T>: TryFrom<U, Error = IllegibleError<U>>,
 {
-    type Error = NonTextError;
+    type Error = IllegibleError<U>;
 
     fn try_from(text: Serde<U>) -> Result<Self, Self::Error> {
-        Legible::try_from(text.text).map_err(|_| NonTextError)
+        Legible::try_from(text.text)
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct NonTextError;
+#[cfg(all(test, feature = "alloc"))]
+pub mod harness {
+    use core::fmt::Debug;
+    use rstest::fixture;
+    use serde::{Deserialize, Serialize};
+    use serde_test::{self, Token};
 
-impl Display for NonTextError {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{NON_TEXT_ERROR_MESSAGE}")
+    use crate::ILLEGIBLE_ERROR_MESSAGE;
+
+    #[fixture]
+    pub fn legible() -> impl Iterator<Item = Token> {
+        Some(Token::BorrowedStr("legible")).into_iter()
+    }
+
+    #[fixture]
+    pub fn illegible() -> impl Iterator<Item = Token> {
+        Some(Token::BorrowedStr("\u{FEFF}")).into_iter()
+    }
+
+    pub fn assert_into_and_from_tokens_eq<T, N>(text: T, tokens: impl IntoIterator<Item = Token>)
+    where
+        for<'de> T: Debug + Deserialize<'de> + PartialEq + Serialize,
+        N: AsRef<[Token]> + FromIterator<Token>,
+    {
+        let tokens: N = tokens.into_iter().collect();
+        serde_test::assert_tokens(&text, tokens.as_ref());
+    }
+
+    pub fn assert_deserialize_error_eq_illegible_error<T, N>(
+        tokens: impl IntoIterator<Item = Token>,
+    ) where
+        for<'de> T: Debug + Deserialize<'de> + PartialEq + Serialize,
+        N: AsRef<[Token]> + FromIterator<Token>,
+    {
+        let tokens: N = tokens.into_iter().collect();
+        serde_test::assert_de_tokens_error::<T>(tokens.as_ref(), ILLEGIBLE_ERROR_MESSAGE);
     }
 }
-
-impl Error for NonTextError {}
