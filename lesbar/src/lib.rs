@@ -74,7 +74,7 @@ use mitsein::NonEmpty;
 use crate::serde::Serde;
 
 pub use lesbar_macros::{str1, text};
-pub use lesbar_text::{grapheme, iter, StrExt};
+pub use lesbar_text::{grapheme, iter, RuneError, StrExt};
 
 const ILLEGIBLE_ERROR_MESSAGE: &str = "failed to construct text: no legible content";
 
