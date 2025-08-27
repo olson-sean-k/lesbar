@@ -25,7 +25,7 @@ where
     type Error = IllegibleError<U>;
 
     fn try_from(text: Serde<U>) -> Result<Self, Self::Error> {
-        Legible::try_from(text.text)
+        <Legible<T> as TryFrom<U>>::try_from(text.text)
     }
 }
 
