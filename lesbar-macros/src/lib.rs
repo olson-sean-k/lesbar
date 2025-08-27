@@ -10,7 +10,7 @@ use syn::LitStr;
 #[proc_macro]
 pub fn text(input: TokenStream) -> TokenStream {
     let literal = syn::parse_macro_input!(input as LitStr);
-    if literal.value().has_text() {
+    if literal.value().has_legible_text() {
         quote::quote! {
             // SAFETY: The procedural macro that generated this code has established that the
             //         string literal is non-empty. See `lesbar_text::StrExt::has_text`.

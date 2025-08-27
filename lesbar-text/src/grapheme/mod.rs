@@ -71,7 +71,7 @@ impl Grapheme {
     // is non-zero per UCS and UAX11. Private-use characters have no display width, but are
     // typically rendered as a replacement glyph when not assigned or recognized. When used as
     // intended, private-use characters represent a glyph with some non-zero rendered width.
-    pub fn is_text(&self) -> bool {
+    pub fn is_legible_text(&self) -> bool {
         self.is_private_use_character() || self.width() != 0
     }
 

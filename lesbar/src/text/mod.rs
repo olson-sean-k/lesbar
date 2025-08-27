@@ -47,7 +47,7 @@ impl Text {
     }
 
     pub fn try_from_str1(text: &Str1) -> Result<&Self, IllegibleError<&Str1>> {
-        if text.has_text() {
+        if text.has_legible_text() {
             Ok(Text::from_str1_unchecked(text))
         }
         else {
@@ -56,7 +56,7 @@ impl Text {
     }
 
     pub fn try_from_mut_str1(text: &mut Str1) -> Result<&mut Self, IllegibleError<&mut Str1>> {
-        if text.has_text() {
+        if text.has_legible_text() {
             Ok(Text::from_mut_str1_unchecked(text))
         }
         else {

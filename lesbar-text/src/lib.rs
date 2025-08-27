@@ -23,7 +23,7 @@ pub trait StrExt {
 
     fn grapheme_indices(&self) -> GraphemeIndices<'_>;
 
-    fn has_text(&self) -> bool;
+    fn has_legible_text(&self) -> bool;
 }
 
 impl StrExt for str {
@@ -39,11 +39,11 @@ impl StrExt for str {
     //       well-defined as possible and documented accordingly. This function implements this
     //       important predicate and so should probably provide this definition in its API
     //       documentation.
-    fn has_text(&self) -> bool {
+    fn has_legible_text(&self) -> bool {
         self.width() != 0
             && self
                 .graphemes()
-                .filter(|grapheme| grapheme.is_text())
+                .filter(|grapheme| grapheme.is_legible_text())
                 .take(1)
                 .count()
                 != 0
@@ -126,7 +126,7 @@ mod tests {
 
     #[rstest]
     fn empty_str_has_no_text() {
-        assert!(!"".has_text());
+        assert!(!"".has_legible_text());
     }
 
     #[rstest]
@@ -137,6 +137,6 @@ mod tests {
     #[case::many_from_each_plane("\u{E000}\u{F0000}\u{10FFFD}")]
     #[case::many_with_non_text("\u{E000}\u{200B}\u{E001}")]
     fn str_with_private_use_characters_has_text(#[case] text: &str) {
-        assert!(text.has_text())
+        assert!(text.has_legible_text())
     }
 }

@@ -91,7 +91,7 @@ where
         if text
             .get(remainder.clone())
             .expect("string slice out of bounds or not on code point boundary")
-            .has_text()
+            .has_legible_text()
         {
             Ok(many(text, remainder))
         }
@@ -346,7 +346,7 @@ impl TryFrom<String1> for TextBuf {
     type Error = IllegibleError<String1>;
 
     fn try_from(text: String1) -> Result<Self, Self::Error> {
-        if text.has_text() {
+        if text.has_legible_text() {
             Ok(TextBuf::from_string1_unchecked(text))
         }
         else {
