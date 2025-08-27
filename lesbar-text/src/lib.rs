@@ -125,7 +125,7 @@ mod tests {
     use crate::StrExt as _;
 
     #[rstest]
-    fn empty_str_has_no_text() {
+    fn empty_str_has_no_legible_text() {
         assert!(!"".has_legible_text());
     }
 
@@ -136,7 +136,7 @@ mod tests {
     #[case::one_with_non_text("\u{200B}\u{E064}")]
     #[case::many_from_each_plane("\u{E000}\u{F0000}\u{10FFFD}")]
     #[case::many_with_non_text("\u{E000}\u{200B}\u{E001}")]
-    fn str_with_private_use_characters_has_text(#[case] text: &str) {
+    fn str_with_private_use_characters_has_legible_text(#[case] text: &str) {
         assert!(text.has_legible_text())
     }
 }
