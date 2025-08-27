@@ -377,11 +377,7 @@ mod tests {
 
     use crate::text::{Text, TextBuf};
     #[cfg(feature = "serde")]
-    use {
-        crate::serde,
-        crate::serde::harness::{illegible, legible},
-        crate::text::buf::harness::text,
-    };
+    use {crate::serde, crate::serde::harness::legible, crate::text::buf::harness::text};
 
     #[rstest]
     #[case::only_one_char("A", "A")]
@@ -437,13 +433,13 @@ mod tests {
         serde::harness::assert_into_and_from_tokens_eq::<_, Vec<_>>(text, legible);
     }
 
-    // This test asserts an illegible error given **non-empty** but illegible text. Empty strings
-    // cause an earlier and distinct failure in `String1`.
     #[cfg(feature = "serde")]
     #[rstest]
-    fn deserialize_text_buf_from_empty_tokens_then_illegible_error(
-        illegible: impl Iterator<Item = Token>,
+    #[case::empty(serde::harness::borrowed_str_token(""))]
+    #[case::non_empty(serde::harness::borrowed_str_token("\u{FEFF}"))]
+    fn deserialize_text_buf_from_illegible_tokens_then_illegible_error(
+        #[case] tokens: impl Iterator<Item = Token>,
     ) {
-        serde::harness::assert_deserialize_error_eq_illegible_error::<TextBuf, Vec<_>>(illegible);
+        serde::harness::assert_deserialize_error_eq_illegible_error::<TextBuf, Vec<_>>(tokens);
     }
 }

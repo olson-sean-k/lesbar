@@ -31,6 +31,8 @@ where
 
 #[cfg(all(test, feature = "alloc"))]
 pub mod harness {
+    extern crate std;
+
     use core::fmt::Debug;
     use rstest::fixture;
     use serde::{Deserialize, Serialize};
@@ -40,12 +42,14 @@ pub mod harness {
 
     #[fixture]
     pub fn legible() -> impl Iterator<Item = Token> {
-        Some(Token::BorrowedStr("legible")).into_iter()
+        self::borrowed_str_token("legible")
     }
 
     #[fixture]
-    pub fn illegible() -> impl Iterator<Item = Token> {
-        Some(Token::BorrowedStr("\u{FEFF}")).into_iter()
+    pub fn borrowed_str_token(
+        #[default("legible")] string: &'static str,
+    ) -> impl Iterator<Item = Token> {
+        Some(Token::BorrowedStr(string)).into_iter()
     }
 
     pub fn assert_into_and_from_tokens_eq<T, N>(text: T, tokens: impl IntoIterator<Item = Token>)

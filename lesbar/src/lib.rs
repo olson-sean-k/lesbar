@@ -150,13 +150,11 @@ impl<T> Error for IllegibleError<T> {}
     feature = "serde",
     serde(
         bound(
-            deserialize = "Self: TryFrom<Serde<NonEmpty<T>>, Error = IllegibleError<NonEmpty<T>>>, \
-                           NonEmpty<T>: Deserialize<'de>, \
-                           T: Clone,",
-            serialize = "NonEmpty<T>: Serialize, \
-                         T: Clone,",
+            deserialize = "Self: TryFrom<Serde<T>, Error = IllegibleError<T>>, \
+                           T: Deserialize<'de>,",
+            serialize = "T: Clone + Serialize,",
         ),
-        try_from = "Serde<NonEmpty<T>>",
+        try_from = "Serde<T>",
         into = "Serde<NonEmpty<T>>",
     )
 )]
