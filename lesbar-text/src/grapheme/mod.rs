@@ -2,6 +2,7 @@ mod buf;
 
 #[cfg(feature = "alloc")]
 use alloc::borrow::ToOwned;
+use core::fmt::{self, Debug, Display, Formatter};
 use core::mem;
 use core::ops::Deref;
 use mitsein::str1::Str1;
@@ -13,7 +14,7 @@ use crate::RuneError;
 #[cfg(feature = "alloc")]
 pub use crate::grapheme::buf::*;
 
-#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Grapheme(Str1);
 
@@ -100,11 +101,23 @@ impl AsRef<Str1> for Grapheme {
     }
 }
 
+impl Debug for Grapheme {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self.as_str1(), formatter)
+    }
+}
+
 impl Deref for Grapheme {
     type Target = Str1;
 
     fn deref(&self) -> &Self::Target {
         self.as_str1()
+    }
+}
+
+impl Display for Grapheme {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        Display::fmt(self.as_str1(), formatter)
     }
 }
 

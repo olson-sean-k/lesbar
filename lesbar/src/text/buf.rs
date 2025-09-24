@@ -224,7 +224,7 @@ impl BorrowMut<Text> for TextBuf {
 
 impl Debug for TextBuf {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{:?}", self.as_str())
+        Debug::fmt(self.as_str1(), formatter)
     }
 }
 
@@ -244,7 +244,7 @@ impl DerefMut for TextBuf {
 
 impl Display for TextBuf {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{}", self.as_str())
+        Display::fmt(self.as_str1(), formatter)
     }
 }
 

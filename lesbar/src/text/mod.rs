@@ -127,7 +127,7 @@ impl AsRef<Str1> for Text {
 
 impl Debug for Text {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{:?}", self.as_str())
+        Debug::fmt(self.as_str1(), formatter)
     }
 }
 
@@ -147,7 +147,7 @@ impl DerefMut for Text {
 
 impl Display for Text {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{}", self.as_str())
+        Display::fmt(self.as_str1(), formatter)
     }
 }
 

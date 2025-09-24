@@ -3,6 +3,7 @@
 
 use alloc::borrow::{Borrow, Cow, ToOwned};
 use alloc::string::String;
+use core::fmt::{self, Debug, Display, Formatter};
 use core::ops::Deref;
 use mitsein::borrow1::CowStr1;
 use mitsein::str1::Str1;
@@ -26,7 +27,7 @@ impl<'t> CowGraphemeExt<'t> for CowGrapheme<'t> {
     }
 }
 
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct GraphemeBuf(String1);
 
@@ -86,11 +87,23 @@ impl Borrow<Grapheme> for GraphemeBuf {
     }
 }
 
+impl Debug for GraphemeBuf {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        Debug::fmt(self.as_str1(), formatter)
+    }
+}
+
 impl Deref for GraphemeBuf {
     type Target = Grapheme;
 
     fn deref(&self) -> &Self::Target {
         self.as_grapheme()
+    }
+}
+
+impl Display for GraphemeBuf {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        Display::fmt(self.as_str1(), formatter)
     }
 }
 
