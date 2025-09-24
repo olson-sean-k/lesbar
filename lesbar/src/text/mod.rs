@@ -34,13 +34,13 @@ impl Text {
 
     pub fn try_from_str(text: &str) -> Result<&Self, IllegibleError<&str>> {
         Str1::try_from_str(text)
-            .map_err(IllegibleError::from_illegible)
+            .map_err(IllegibleError::from)
             .and_then(|text1| Text::try_from_str1(text1).map_err(|error| error.map(Str1::as_str)))
     }
 
     pub fn try_from_mut_str(text: &mut str) -> Result<&mut Self, IllegibleError<&mut str>> {
         Str1::try_from_mut_str(text)
-            .map_err(IllegibleError::from_illegible)
+            .map_err(IllegibleError::from)
             .and_then(|text| {
                 Text::try_from_mut_str1(text).map_err(|error| error.map(Str1::as_mut_str))
             })

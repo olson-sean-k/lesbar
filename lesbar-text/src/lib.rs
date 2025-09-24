@@ -11,6 +11,7 @@ pub mod iter;
 use alloc::borrow::ToOwned;
 use core::error::Error;
 use core::fmt::{self, Debug, Display, Formatter};
+use mitsein::EmptyError;
 use unicode_width::UnicodeWidthStr;
 
 use crate::iter::{GraphemeIndices, Graphemes};
@@ -50,7 +51,6 @@ impl StrExt for str {
     }
 }
 
-// TODO: Implement `From<mitsein::EmptyError<_>>`.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct RuneError<T> {
     invalid: T,
@@ -111,6 +111,12 @@ impl<T> Display for RuneError<T> {
 }
 
 impl<T> Error for RuneError<T> {}
+
+impl<T> From<EmptyError<T>> for RuneError<T> {
+    fn from(error: EmptyError<T>) -> Self {
+        RuneError::from_invalid(error.into_empty())
+    }
+}
 
 fn is_grapheme(text: &str) -> bool {
     matches!(text.graphemes().take(2).enumerate().last(), Some((0, _)))

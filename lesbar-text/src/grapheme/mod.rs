@@ -33,7 +33,7 @@ impl Grapheme {
 
     pub fn try_from_str(text: &str) -> Result<&Self, RuneError<&str>> {
         Str1::try_from_str(text)
-            .map_err(RuneError::from_invalid)
+            .map_err(RuneError::from)
             .and_then(|text| Grapheme::try_from_str1(text).map_err(|error| error.map(Str1::as_str)))
     }
 

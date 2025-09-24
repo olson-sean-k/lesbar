@@ -123,7 +123,7 @@ impl TryFrom<String> for GraphemeBuf {
 
     fn try_from(text: String) -> Result<Self, Self::Error> {
         String1::try_from(text)
-            .map_err(RuneError::from_invalid)
+            .map_err(RuneError::from)
             .and_then(|text| {
                 GraphemeBuf::try_from(text).map_err(|error| error.map(String1::into_string))
             })

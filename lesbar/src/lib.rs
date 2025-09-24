@@ -68,7 +68,7 @@ use ::serde::{Deserialize, Serialize};
 use alloc::borrow::ToOwned;
 use core::error::Error;
 use core::fmt::{self, Debug, Display, Formatter};
-use mitsein::NonEmpty;
+use mitsein::{EmptyError, NonEmpty};
 
 #[cfg(feature = "serde")]
 use crate::serde::Serde;
@@ -78,7 +78,6 @@ pub use lesbar_text::{grapheme, iter, RuneError, StrExt};
 
 const ILLEGIBLE_ERROR_MESSAGE: &str = "failed to construct text: no legible content";
 
-// TODO: Implement `From<mitsein::EmptyError<_>>`.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct IllegibleError<T> {
     illegible: T,
@@ -141,6 +140,12 @@ impl<T> Display for IllegibleError<T> {
 }
 
 impl<T> Error for IllegibleError<T> {}
+
+impl<T> From<EmptyError<T>> for IllegibleError<T> {
+    fn from(error: EmptyError<T>) -> Self {
+        IllegibleError::from_illegible(error.into_empty())
+    }
+}
 
 #[cfg_attr(
     feature = "serde",

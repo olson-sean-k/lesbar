@@ -144,8 +144,8 @@ impl TextBuf {
         // that is unnecessary for `self` to remain textual.
         Take::with(self, ..index, |text, _| {
             text.as_mut_string1()
-                .pop_or()
-                .none()
+                .pop()
+                .or_none()
                 .expect("expected code point following textual sub-string")
         })
     }
@@ -317,7 +317,7 @@ impl<'a> TryFrom<&'a str> for TextBuf {
 
     fn try_from(text: &'a str) -> Result<Self, Self::Error> {
         String1::try_from(text)
-            .map_err(IllegibleError::from_illegible)
+            .map_err(IllegibleError::from)
             .and_then(|text1| TextBuf::try_from(text1).map_err(|error| error.map(|_| text)))
     }
 }
@@ -327,7 +327,7 @@ impl TryFrom<String> for TextBuf {
 
     fn try_from(text: String) -> Result<Self, Self::Error> {
         String1::try_from(text)
-            .map_err(IllegibleError::from_illegible)
+            .map_err(IllegibleError::from)
             .and_then(|text1| {
                 TextBuf::try_from(text1).map_err(|error| error.map(String1::into_string))
             })
