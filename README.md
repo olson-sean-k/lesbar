@@ -33,7 +33,7 @@ Removing text from a `TextBuf`:
 use lesbar::prelude::*;
 
 let mut text = TextBuf::from(lesbar::text!("Raus damit."));
-let grapheme = text.pop_grapheme().or_none().unwrap();
+let grapheme = text.pop_grapheme_if_many().or_none().unwrap();
 
 assert_eq!(grapheme, ".");
 ```

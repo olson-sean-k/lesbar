@@ -56,18 +56,18 @@ pub trait CowTextExt<'a> {}
 
 impl<'a> CowTextExt<'a> for CowText<'a> {}
 
-pub type Pop<'t, T> = Take<'t, T, RangeTo<usize>>;
+pub type PopIfMany<'t, T> = TakeIfMany<'t, T, RangeTo<usize>>;
 
 #[derive(Debug)]
-pub struct Take<'t, T, N = ()> {
+pub struct TakeIfMany<'t, T, N = ()> {
     text: &'t mut TextBuf,
     remainder: N,
     many: fn(&'t mut TextBuf, N) -> T,
 }
 
-impl<'t, T, N> Take<'t, T, N> {
+impl<'t, T, N> TakeIfMany<'t, T, N> {
     const fn with(text: &'t mut TextBuf, remainder: N, many: fn(&mut TextBuf, N) -> T) -> Self {
-        Take {
+        TakeIfMany {
             text,
             remainder,
             many,
@@ -75,7 +75,7 @@ impl<'t, T, N> Take<'t, T, N> {
     }
 }
 
-impl<'t, T, N> Take<'t, T, N>
+impl<'t, T, N> TakeIfMany<'t, T, N>
 where
     N: Clone + SliceIndex<str, Output = str>,
 {
@@ -83,7 +83,7 @@ where
     where
         F: FnOnce(&'t mut TextBuf, N) -> E,
     {
-        let Take {
+        let TakeIfMany {
             text,
             remainder,
             many,
@@ -116,7 +116,7 @@ where
     }
 }
 
-impl<'t, T> Take<'t, T, RangeTo<usize>> {
+impl<'t, T> TakeIfMany<'t, T, RangeTo<usize>> {
     pub fn or_get(self) -> Result<T, &'t str> {
         self.take_or_else(|text, remainder| {
             // `take_or_else` attempts to slice the string, so `[]` is used here instead of `get`
@@ -137,12 +137,12 @@ impl TextBuf {
         self.text
     }
 
-    pub fn pop_char(&mut self) -> Pop<'_, char> {
+    pub fn pop_char_if_many(&mut self) -> PopIfMany<'_, char> {
         let (index, _) = self.char_indices1().rev().first();
         // `TakeOr` only calls this function if the range has text. Since `index` demarks the last
         // code point and the exclusive end of the range, there must be a terminating code point
         // that is unnecessary for `self` to remain textual.
-        Take::with(self, ..index, |text, _| {
+        TakeIfMany::with(self, ..index, |text, _| {
             text.as_mut_string1()
                 .pop_if_many()
                 .or_none()
@@ -150,12 +150,12 @@ impl TextBuf {
         })
     }
 
-    pub fn pop_grapheme(&mut self) -> Pop<'_, GraphemeBuf> {
+    pub fn pop_grapheme_if_many(&mut self) -> PopIfMany<'_, GraphemeBuf> {
         let (index, _) = self.grapheme_indices1().rev().first();
         // SAFETY: `index` demarks a grapheme and `TakeOr` only calls this function if the
         //         range is a valid string slice and has text, so splitting off the grapheme
         //         produces non-empty and valid UTF-8 on both sides and `self` remains textual.
-        Take::with(self, ..index, |text, remainder| unsafe {
+        TakeIfMany::with(self, ..index, |text, remainder| unsafe {
             GraphemeBuf::from_string_unchecked(String::from_utf8_unchecked(
                 text.as_mut_string1()
                     .as_mut_vec1()
@@ -391,13 +391,13 @@ mod tests {
     #[case::non_text_prefix("\u{200B}\u{E064}ZWSP+PUC", "\u{200B}\u{E064}")]
     #[case::combining("ä", "ä")]
     #[case::combining("\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}", "\u{1F3F3}")]
-    fn pop_char_from_text_buf_until_exhausted_then_text_buf_eq(
+    fn pop_char_if_many_from_text_buf_until_exhausted_then_text_buf_eq(
         #[case] text: &str,
         #[case] expected: &str,
     ) {
         let mut text = TextBuf::try_from(text).unwrap();
         let expected = Text::try_from_str(expected).unwrap();
-        while text.pop_char().or_false() {}
+        while text.pop_char_if_many().or_false() {}
         assert_eq!(text, expected);
     }
 
@@ -415,13 +415,13 @@ mod tests {
         "\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}",
         "\u{1F3F3}\u{FE0F}\u{200D}\u{1F308}"
     )]
-    fn pop_grapheme_from_text_buf_until_exhausted_then_text_buf_eq(
+    fn pop_grapheme_if_many_from_text_buf_until_exhausted_then_text_buf_eq(
         #[case] text: &str,
         #[case] expected: &str,
     ) {
         let mut text = TextBuf::try_from(text).unwrap();
         let expected = Text::try_from_str(expected).unwrap();
-        while text.pop_grapheme().or_false() {}
+        while text.pop_grapheme_if_many().or_false() {}
         assert_eq!(text, expected);
     }
 
