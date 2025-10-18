@@ -13,9 +13,9 @@ use core::ops::{Deref, DerefMut, RangeTo};
 use core::slice::SliceIndex;
 use mitsein::borrow1::CowStr1;
 use mitsein::boxed1::BoxedStr1;
+use mitsein::segment::Query;
 use mitsein::str1::Str1;
 use mitsein::string1::String1;
-use mitsein::Segmentation;
 
 use crate::grapheme::GraphemeBuf;
 use crate::text::Text;
@@ -144,7 +144,7 @@ impl TextBuf {
         // that is unnecessary for `self` to remain textual.
         Take::with(self, ..index, |text, _| {
             text.as_mut_string1()
-                .pop()
+                .pop_if_many()
                 .or_none()
                 .expect("expected code point following textual sub-string")
         })
@@ -160,6 +160,7 @@ impl TextBuf {
                 text.as_mut_string1()
                     .as_mut_vec1()
                     .segment(remainder.end..)
+                    .unwrap()
                     .split_off(0),
             ))
         })
