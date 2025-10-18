@@ -81,10 +81,10 @@ mechanism that consider this property.
 Lesbar is a `no_std` library and `alloc` is optional. **Textual string slices
 can be used in contexts where OS features or allocation are not available.**
 
-## Integrations and Cargo Features
+## Integrations and Feature Flags
 
-Lesbar provides some optional features and integrations via the following Cargo
-features.
+Lesbar provides some optional features and integrations via the following
+feature flags.
 
 | Feature     | Default | Primary Dependency | Description                                         |
 |-------------|---------|--------------------|-----------------------------------------------------|

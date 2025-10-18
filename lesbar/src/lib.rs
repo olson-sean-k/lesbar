@@ -6,13 +6,13 @@
 //! type parameter. This is mostly a problem for types that dereference to [`Str1`], such as
 //! [`Text`]. See [this `rustdoc` bug](https://github.com/rust-lang/rust/issues/24686).
 //!
-//! # Integrations and Cargo Features
+//! # Integrations and Feature Flags
 //!
 //! Lesbar supports `no_std` environments and provides features for integrating as needed with
 //! [`alloc`]. By default, the `alloc` feature is enabled for complete support of the standard
 //! library.
 //!
-//! The following table summarizes supported Cargo features and integrations.
+//! The following table summarizes supported feature flags and integrations.
 //!
 //! | Feature     | Default | Primary Dependency | Description                                         |
 //! |-------------|---------|--------------------|-----------------------------------------------------|
