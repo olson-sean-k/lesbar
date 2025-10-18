@@ -137,6 +137,18 @@ impl TextBuf {
         self.text
     }
 
+    pub fn leak<'a>(self) -> &'a Text {
+        Text::from_str1_unchecked(self.text.leak())
+    }
+
+    pub fn push(&mut self, point: char) {
+        self.text.push(point)
+    }
+
+    pub fn push_str(&mut self, text: &str) {
+        self.text.push_str(text)
+    }
+
     pub fn pop_char_if_many(&mut self) -> PopIfMany<'_, char> {
         let (index, _) = self.char_indices1().rev().first();
         // `TakeOr` only calls this function if the range has text. Since `index` demarks the last
@@ -164,10 +176,6 @@ impl TextBuf {
                     .split_off(0),
             ))
         })
-    }
-
-    pub fn leak<'a>(self) -> &'a Text {
-        Text::from_str1_unchecked(self.text.leak())
     }
 
     pub fn as_text(&self) -> &Text {
