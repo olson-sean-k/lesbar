@@ -13,7 +13,7 @@ use core::ops::{Deref, DerefMut, RangeTo};
 use core::slice::SliceIndex;
 use mitsein::borrow1::CowStr1;
 use mitsein::boxed1::BoxedStr1;
-use mitsein::segment::Query;
+use mitsein::segment::ByRange;
 use mitsein::str1::Str1;
 use mitsein::string1::String1;
 
