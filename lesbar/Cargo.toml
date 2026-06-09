@@ -45,15 +45,15 @@ version = "^0.1.0"
 path = "../lesbar-text"
 
 [dependencies.serde]
-version = "1.0"
+version = "1.0.0"
 default-features = false
 optional = true
 
 [dependencies.serde_derive]
-version = "1.0"
+version = "1.0.0"
 default-features = false
 optional = true
 
 [dev-dependencies]
 rstest.workspace = true
-serde_test = "1.0"
+serde_test = "1.0.0"
