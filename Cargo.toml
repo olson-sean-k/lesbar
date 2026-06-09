@@ -7,7 +7,6 @@ members = [
 resolver = "2"
 
 [workspace.package]
-authors = ["Sean Olson <olson.sean.k@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/olson-sean-k/lesbar"
 edition = "2021"
